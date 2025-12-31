@@ -1,0 +1,31 @@
+package templates
+
+templ Home() {
+	@Layout("Home") {
+		<div class="max-w-4xl mx-auto">
+			<div class="bg-white rounded-lg shadow-md p-8 mb-8">
+				<h2 class="text-3xl font-bold text-gray-800 mb-4">Welcome to Arabica</h2>
+				<p class="text-gray-600 mb-6">Track your coffee brewing journey with detailed logs of every cup.</p>
+				
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<a href="/brews/new" class="block bg-brown-600 text-white text-center py-4 px-6 rounded-lg hover:bg-brown-700 transition">
+						<span class="text-xl">➕ Add New Brew</span>
+					</a>
+					<a href="/brews" class="block bg-gray-600 text-white text-center py-4 px-6 rounded-lg hover:bg-gray-700 transition">
+						<span class="text-xl">📋 View All Brews</span>
+					</a>
+				</div>
+			</div>
+			
+			<div class="bg-blue-50 rounded-lg p-6 border border-blue-200">
+				<h3 class="text-lg font-semibold text-blue-900 mb-2">Quick Start</h3>
+				<ul class="text-blue-800 space-y-2">
+					<li>• Track brewing variables like temperature, time, and grind size</li>
+					<li>• Organize beans by origin and roaster</li>
+					<li>• Add tasting notes and ratings to each brew</li>
+					<li>• Export your data as JSON</li>
+				</ul>
+			</div>
+		</div>
+	}
+}

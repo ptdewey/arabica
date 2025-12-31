@@ -1,0 +1,242 @@
+package templates
+
+import "arabica/internal/models"
+
+templ BrewForm(beans []*models.Bean, roasters []*models.Roaster, brew *models.Brew) {
+	@Layout("New Brew") {
+		<div class="max-w-2xl mx-auto">
+			<div class="bg-white rounded-lg shadow-md p-8">
+				<h2 class="text-3xl font-bold text-gray-800 mb-6">
+					if brew != nil {
+						Edit Brew
+					} else {
+						New Brew
+					}
+				</h2>
+				
+				<form 
+					if brew != nil {
+						hx-put={ "/brews/" + formatID(brew.ID) }
+					} else {
+						hx-post="/brews"
+					}
+					hx-target="body"
+					class="space-y-6"
+					x-data="brewForm()">
+					
+					<!-- Bean Selection -->
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-2">Coffee Bean</label>
+						<div class="flex gap-2">
+							<select 
+								name="bean_id" 
+								required
+								class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4">
+								<option value="">Select a bean...</option>
+							for _, bean := range beans {
+								<option value={ formatID(bean.ID) }>
+									if bean.Name != "" {
+										{ bean.Name } ({ bean.Origin } - { bean.RoastLevel })
+									} else {
+										{ bean.Origin } - { bean.RoastLevel }
+									}
+								</option>
+							}
+							</select>
+							<button 
+								type="button"
+								@click="showNewBean = true"
+								class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">
+								+ New
+							</button>
+						</div>
+						
+					<!-- New Bean Modal -->
+					<div x-show="showNewBean" class="mt-4 p-4 bg-gray-50 rounded border">
+						<h4 class="font-medium mb-3">Add New Bean</h4>
+						<div class="space-y-3">
+							<input type="text" x-model="newBean.name" placeholder="Name (e.g. Morning Blend, House Espresso) *" class="w-full rounded-md border-gray-300 py-2 px-3"/>
+							<input type="text" x-model="newBean.origin" placeholder="Origin (e.g. Ethiopia)" class="w-full rounded-md border-gray-300 py-2 px-3"/>
+							<input type="text" x-model="newBean.roastLevel" placeholder="Roast Level (e.g. Medium)" class="w-full rounded-md border-gray-300 py-2 px-3"/>
+							<input type="text" x-model="newBean.description" placeholder="Description (optional)" class="w-full rounded-md border-gray-300 py-2 px-3"/>
+								<div class="flex gap-2">
+									<button type="button" @click="addBean()" class="bg-brown-600 text-white px-4 py-2 rounded hover:bg-brown-700">Add</button>
+									<button type="button" @click="showNewBean = false" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>
+								</div>
+							</div>
+						</div>
+					</div>
+					
+					<!-- Roaster Selection -->
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-2">Roaster</label>
+						<div class="flex gap-2">
+							<select 
+								name="roaster_id" 
+								required
+								class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4">
+								<option value="">Select a roaster...</option>
+								for _, roaster := range roasters {
+									<option value={ formatID(roaster.ID) }>{ roaster.Name }</option>
+								}
+							</select>
+							<button 
+								type="button"
+								@click="showNewRoaster = true"
+								class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">
+								+ New
+							</button>
+						</div>
+						
+						<!-- New Roaster Modal -->
+						<div x-show="showNewRoaster" class="mt-4 p-4 bg-gray-50 rounded border">
+							<h4 class="font-medium mb-3">Add New Roaster</h4>
+							<div class="space-y-3">
+								<input type="text" x-model="newRoaster.name" placeholder="Roaster Name" class="w-full rounded-md border-gray-300 py-2 px-3"/>
+								<div class="flex gap-2">
+									<button type="button" @click="addRoaster()" class="bg-brown-600 text-white px-4 py-2 rounded hover:bg-brown-700">Add</button>
+									<button type="button" @click="showNewRoaster = false" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>
+								</div>
+							</div>
+						</div>
+					</div>
+					
+					<!-- Brew Method -->
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-2">Brew Method</label>
+						<select name="method" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4">
+							<option value="">Select method...</option>
+							<option value="Pour Over">Pour Over</option>
+							<option value="French Press">French Press</option>
+							<option value="AeroPress">AeroPress</option>
+							<option value="Espresso">Espresso</option>
+							<option value="Moka Pot">Moka Pot</option>
+							<option value="Cold Brew">Cold Brew</option>
+							<option value="Other">Other</option>
+						</select>
+					</div>
+					
+					<!-- Temperature -->
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-2">Temperature (°C)</label>
+						<input 
+							type="number" 
+							name="temperature" 
+							step="0.1"
+							placeholder="e.g. 93.5"
+							class="w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4"/>
+					</div>
+					
+					<!-- Brew Time -->
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-2">Brew Time (seconds)</label>
+						<input 
+							type="number" 
+							name="time_seconds" 
+							placeholder="e.g. 180"
+							class="w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4"/>
+					</div>
+					
+				<!-- Grind Size -->
+				<div>
+					<label class="block text-sm font-medium text-gray-700 mb-2">Grind Size</label>
+					<input 
+						type="text" 
+						name="grind_size" 
+						placeholder="e.g. 18, Medium, 3.5, Fine"
+						class="w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4"/>
+					<p class="text-sm text-gray-500 mt-1">Enter a number (grinder setting) or description (e.g. "Medium", "Fine")</p>
+				</div>
+					
+					<!-- Grinder -->
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-2">Grinder (optional)</label>
+						<input 
+							type="text" 
+							name="grinder" 
+							placeholder="e.g. Baratza Encore"
+							class="w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4"/>
+					</div>
+					
+					<!-- Tasting Notes -->
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-2">Tasting Notes</label>
+						<textarea 
+							name="tasting_notes" 
+							rows="4"
+							placeholder="Describe the flavors, aroma, and your thoughts..."
+							class="w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4"></textarea>
+					</div>
+					
+					<!-- Rating -->
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+						<input 
+							type="range" 
+							name="rating" 
+							min="1" 
+							max="10" 
+							value="5"
+							x-model="rating"
+							class="w-full"/>
+						<div class="text-center text-2xl font-bold text-brown-600">
+							<span x-text="rating"></span>/10
+						</div>
+					</div>
+					
+					<!-- Submit -->
+					<div class="flex gap-4">
+						<button 
+							type="submit"
+							class="flex-1 bg-brown-600 text-white py-3 px-6 rounded-lg hover:bg-brown-700 transition font-medium text-lg">
+							if brew != nil {
+								Update Brew
+							} else {
+								Save Brew
+							}
+						</button>
+						<a href="/brews" class="flex-1 bg-gray-300 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-400 transition font-medium text-lg text-center">
+							Cancel
+						</a>
+					</div>
+				</form>
+			</div>
+		</div>
+		
+		<script>
+			function brewForm() {
+				return {
+					showNewBean: false,
+					showNewRoaster: false,
+					rating: 5,
+					newBean: { name: '', origin: '', roastLevel: '', description: '' },
+					newRoaster: { name: '' },
+					async addBean() {
+						if (!this.newBean.name) {
+							alert('Bean name is required');
+							return;
+						}
+						const response = await fetch('/api/beans', {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify(this.newBean)
+						});
+						if (response.ok) {
+							window.location.reload();
+						}
+					},
+					async addRoaster() {
+						const response = await fetch('/api/roasters', {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify(this.newRoaster)
+						});
+						if (response.ok) {
+							window.location.reload();
+						}
+					}
+				}
+			}
+		</script>
+	}
+}

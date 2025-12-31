@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom colors for coffee theme */
+:root {
+  --brown-50: #fdf8f6;
+  --brown-100: #f2e8e5;
+  --brown-200: #eaddd7;
+  --brown-300: #e0cec7;
+  --brown-600: #7f5539;
+  --brown-700: #6b4423;
+  --brown-800: #4a2c2a;
+}
+
+.bg-brown-800 {
+  background-color: var(--brown-800);
+}
+
+.bg-brown-700 {
+  background-color: var(--brown-700);
+}
+
+.bg-brown-600 {
+  background-color: var(--brown-600);
+}
+
+.hover\:bg-brown-700:hover {
+  background-color: var(--brown-700);
+}
+
+.hover\:text-brown-200:hover {
+  color: var(--brown-200);
+}
+
+.text-brown-600 {
+  color: var(--brown-600);
+}
+
+.focus\:border-brown-500:focus {
+  border-color: var(--brown-600);
+}
+
+.focus\:ring-brown-500:focus {
+  --tw-ring-color: var(--brown-600);
+}
+
+/* Mobile-first touch targets */
+button,
+a,
+input[type="submit"] {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Form inputs - larger on mobile */
+@media (max-width: 768px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px; /* Prevents iOS zoom on focus */
+  }
+}
+
+/* Loading state for HTMX */
+.htmx-swapping {
+  opacity: 0;
+  transition: opacity 0.3s ease-out;
+}
+
+/* Smooth transitions */
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
