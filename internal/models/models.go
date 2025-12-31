@@ -59,12 +59,12 @@ type Brew struct {
 	ID           int       `json:"id"`
 	UserID       int       `json:"user_id"`
 	BeanID       int       `json:"bean_id"`
-	Method       string    `json:"method"`
+	Method       string    `json:"method,omitempty"`
 	Temperature  float64   `json:"temperature"`
 	WaterAmount  int       `json:"water_amount"`
 	TimeSeconds  int       `json:"time_seconds"`
 	GrindSize    string    `json:"grind_size"`
-	Grinder      string    `json:"grinder"`
+	Grinder      string    `json:"grinder,omitempty"`
 	GrinderID    *int      `json:"grinder_id"`
 	BrewerID     *int      `json:"brewer_id"`
 	TastingNotes string    `json:"tasting_notes"`

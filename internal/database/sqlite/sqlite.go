@@ -137,9 +137,9 @@ func (s *SQLiteStore) GetBrew(id int) (*models.Brew, error) {
 			b.id, b.user_id, b.bean_id, b.method, b.temperature, b.water_amount,
 			b.time_seconds, b.grind_size, b.grinder, b.grinder_id, b.brewer_id, b.tasting_notes, b.rating, b.created_at,
 			bn.id, bn.name, bn.origin, bn.roast_level, bn.process, bn.description, bn.roaster_id,
-			COALESCE(r.id, 0), COALESCE(r.name, ''),
-			COALESCE(g.id, 0), COALESCE(g.name, ''),
-			COALESCE(br.id, 0), COALESCE(br.name, '')
+			COALESCE(r.id, 0), COALESCE(r.name, ''), COALESCE(r.location, ''), COALESCE(r.website, ''),
+			COALESCE(g.id, 0), COALESCE(g.name, ''), COALESCE(g.grinder_type, ''), COALESCE(g.burr_type, ''), COALESCE(g.notes, ''),
+			COALESCE(br.id, 0), COALESCE(br.name, ''), COALESCE(br.description, '')
 		FROM brews b
 		JOIN beans bn ON b.bean_id = bn.id
 		LEFT JOIN roasters r ON bn.roaster_id = r.id
@@ -150,9 +150,9 @@ func (s *SQLiteStore) GetBrew(id int) (*models.Brew, error) {
 		&brew.ID, &brew.UserID, &brew.BeanID, &brew.Method, &brew.Temperature, &brew.WaterAmount,
 		&brew.TimeSeconds, &brew.GrindSize, &brew.Grinder, &brew.GrinderID, &brew.BrewerID, &brew.TastingNotes, &brew.Rating, &brew.CreatedAt,
 		&brew.Bean.ID, &brew.Bean.Name, &brew.Bean.Origin, &brew.Bean.RoastLevel, &brew.Bean.Process, &brew.Bean.Description, &brew.Bean.RoasterID,
-		&brew.Bean.Roaster.ID, &brew.Bean.Roaster.Name,
-		&brew.GrinderObj.ID, &brew.GrinderObj.Name,
-		&brew.BrewerObj.ID, &brew.BrewerObj.Name,
+		&brew.Bean.Roaster.ID, &brew.Bean.Roaster.Name, &brew.Bean.Roaster.Location, &brew.Bean.Roaster.Website,
+		&brew.GrinderObj.ID, &brew.GrinderObj.Name, &brew.GrinderObj.GrinderType, &brew.GrinderObj.BurrType, &brew.GrinderObj.Notes,
+		&brew.BrewerObj.ID, &brew.BrewerObj.Name, &brew.BrewerObj.Description,
 	)
 
 	if err != nil {
@@ -175,9 +175,9 @@ func (s *SQLiteStore) ListBrews(userID int) ([]*models.Brew, error) {
 			b.id, b.user_id, b.bean_id, b.method, b.temperature, b.water_amount,
 			b.time_seconds, b.grind_size, b.grinder, b.grinder_id, b.brewer_id, b.tasting_notes, b.rating, b.created_at,
 			bn.id, bn.name, bn.origin, bn.roast_level, bn.process, bn.description, bn.roaster_id,
-			COALESCE(r.id, 0), COALESCE(r.name, ''),
-			COALESCE(g.id, 0), COALESCE(g.name, ''),
-			COALESCE(br.id, 0), COALESCE(br.name, '')
+			COALESCE(r.id, 0), COALESCE(r.name, ''), COALESCE(r.location, ''), COALESCE(r.website, ''),
+			COALESCE(g.id, 0), COALESCE(g.name, ''), COALESCE(g.grinder_type, ''), COALESCE(g.burr_type, ''), COALESCE(g.notes, ''),
+			COALESCE(br.id, 0), COALESCE(br.name, ''), COALESCE(br.description, '')
 		FROM brews b
 		JOIN beans bn ON b.bean_id = bn.id
 		LEFT JOIN roasters r ON bn.roaster_id = r.id
@@ -206,9 +206,9 @@ func (s *SQLiteStore) ListBrews(userID int) ([]*models.Brew, error) {
 			&brew.ID, &brew.UserID, &brew.BeanID, &brew.Method, &brew.Temperature, &brew.WaterAmount,
 			&brew.TimeSeconds, &brew.GrindSize, &brew.Grinder, &brew.GrinderID, &brew.BrewerID, &brew.TastingNotes, &brew.Rating, &brew.CreatedAt,
 			&brew.Bean.ID, &brew.Bean.Name, &brew.Bean.Origin, &brew.Bean.RoastLevel, &brew.Bean.Process, &brew.Bean.Description, &brew.Bean.RoasterID,
-			&brew.Bean.Roaster.ID, &brew.Bean.Roaster.Name,
-			&brew.GrinderObj.ID, &brew.GrinderObj.Name,
-			&brew.BrewerObj.ID, &brew.BrewerObj.Name,
+			&brew.Bean.Roaster.ID, &brew.Bean.Roaster.Name, &brew.Bean.Roaster.Location, &brew.Bean.Roaster.Website,
+			&brew.GrinderObj.ID, &brew.GrinderObj.Name, &brew.GrinderObj.GrinderType, &brew.GrinderObj.BurrType, &brew.GrinderObj.Notes,
+			&brew.BrewerObj.ID, &brew.BrewerObj.Name, &brew.BrewerObj.Description,
 		)
 
 		if err != nil {

@@ -14,6 +14,11 @@ func formatTemp(temp float64) string {
 	return fmt.Sprintf("%.1f°C", temp)
 }
 
+func formatTempValue(temp float64) string {
+	// For use in input fields - returns just the numeric value
+	return fmt.Sprintf("%.1f", temp)
+}
+
 func formatTime(seconds int) string {
 	if seconds == 0 {
 		return "N/A"

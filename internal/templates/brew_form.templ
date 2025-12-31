@@ -267,7 +267,7 @@ templ BrewForm(beans []*models.Bean, roasters []*models.Roaster, grinders []*mod
 						name="temperature" 
 						step="0.1"
 						if brew != nil && brew.Temperature > 0 {
-							value={ formatTemp(brew.Temperature) }
+							value={ formatTempValue(brew.Temperature) }
 						}
 						placeholder="e.g. 93.5"
 						class="w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4"/>
