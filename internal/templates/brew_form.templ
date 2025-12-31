@@ -2,7 +2,7 @@ package templates
 
 import "arabica/internal/models"
 
-templ BrewForm(beans []*models.Bean, brew *models.Brew) {
+templ BrewForm(beans []*models.Bean, grinders []*models.Grinder, brewers []*models.Brewer, brew *models.Brew) {
 	@Layout("New Brew") {
 		<div class="max-w-2xl mx-auto">
 			<div class="bg-white rounded-lg shadow-md p-8">
@@ -76,24 +76,103 @@ templ BrewForm(beans []*models.Bean, brew *models.Brew) {
 			</div>
 	</div>
 					
+					<!-- Grinder -->
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-2">Grinder</label>
+						<div class="flex gap-2">
+							<select 
+								name="grinder_id"
+								class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4">
+								<option value="">Select a grinder...</option>
+							for _, grinder := range grinders {
+								<option value={ formatID(grinder.ID) }>
+									{ grinder.Name }
+								</option>
+							}
+							</select>
+							<button 
+								type="button"
+								@click="showNewGrinder = true"
+								class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">
+								+ New
+							</button>
+						</div>
+						
+						<!-- New Grinder Modal -->
+						<div x-show="showNewGrinder" class="mt-4 p-4 bg-gray-50 rounded border">
+							<h4 class="font-medium mb-3">Add New Grinder</h4>
+							<div class="space-y-3">
+								<input type="text" x-model="newGrinder.name" placeholder="Name (e.g. Baratza Encore) *" class="w-full rounded-md border-gray-300 py-2 px-3"/>
+								<select x-model="newGrinder.grinderType" class="w-full rounded-md border-gray-300 py-2 px-3">
+									<option value="">Grinder Type (Optional)</option>
+									<option value="Hand">Hand</option>
+									<option value="Electric">Electric</option>
+									<option value="Electric Hand">Electric Hand</option>
+								</select>
+								<select x-model="newGrinder.burrType" class="w-full rounded-md border-gray-300 py-2 px-3">
+									<option value="">Burr Type (Optional)</option>
+									<option value="Conical">Conical</option>
+									<option value="Flat">Flat</option>
+								</select>
+								<input type="text" x-model="newGrinder.notes" placeholder="Notes (optional)" class="w-full rounded-md border-gray-300 py-2 px-3"/>
+								<div class="flex gap-2">
+									<button type="button" @click="addGrinder()" class="bg-brown-600 text-white px-4 py-2 rounded hover:bg-brown-700">Add</button>
+									<button type="button" @click="showNewGrinder = false" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				
+				<!-- Grind Size -->
+				<div>
+					<label class="block text-sm font-medium text-gray-700 mb-2">Grind Size</label>
+					<input 
+						type="text" 
+						name="grind_size" 
+						placeholder="e.g. 18, Medium, 3.5, Fine"
+						class="w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4"/>
+					<p class="text-sm text-gray-500 mt-1">Enter a number (grinder setting) or description (e.g. "Medium", "Fine")</p>
+				</div>
+					
 					<!-- Brew Method -->
 					<div>
 						<label class="block text-sm font-medium text-gray-700 mb-2">Brew Method</label>
-						<select name="method" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4">
-							<option value="">Select method...</option>
-							<option value="Pour Over">Pour Over</option>
-							<option value="French Press">French Press</option>
-							<option value="AeroPress">AeroPress</option>
-							<option value="Espresso">Espresso</option>
-							<option value="Moka Pot">Moka Pot</option>
-							<option value="Cold Brew">Cold Brew</option>
-							<option value="Other">Other</option>
-						</select>
+						<div class="flex gap-2">
+							<select 
+								name="brewer_id"
+								class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4">
+								<option value="">Select brew method...</option>
+							for _, brewer := range brewers {
+								<option value={ formatID(brewer.ID) }>
+									{ brewer.Name }
+								</option>
+							}
+							</select>
+							<button 
+								type="button"
+								@click="showNewBrewer = true"
+								class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">
+								+ New
+							</button>
+						</div>
+						
+						<!-- New Brewer Modal -->
+						<div x-show="showNewBrewer" class="mt-4 p-4 bg-gray-50 rounded border">
+							<h4 class="font-medium mb-3">Add New Brewer</h4>
+							<div class="space-y-3">
+								<input type="text" x-model="newBrewer.name" placeholder="Name (e.g. V60, AeroPress) *" class="w-full rounded-md border-gray-300 py-2 px-3"/>
+								<input type="text" x-model="newBrewer.description" placeholder="Description (optional)" class="w-full rounded-md border-gray-300 py-2 px-3"/>
+								<div class="flex gap-2">
+									<button type="button" @click="addBrewer()" class="bg-brown-600 text-white px-4 py-2 rounded hover:bg-brown-700">Add</button>
+									<button type="button" @click="showNewBrewer = false" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>
+								</div>
+							</div>
+						</div>
 					</div>
 					
 					<!-- Temperature -->
 					<div>
-						<label class="block text-sm font-medium text-gray-700 mb-2">Temperature (°C)</label>
+						<label class="block text-sm font-medium text-gray-700 mb-2">Temperature</label>
 						<input 
 							type="number" 
 							name="temperature" 
@@ -109,27 +188,6 @@ templ BrewForm(beans []*models.Bean, brew *models.Brew) {
 							type="number" 
 							name="time_seconds" 
 							placeholder="e.g. 180"
-							class="w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4"/>
-					</div>
-					
-				<!-- Grind Size -->
-				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-2">Grind Size</label>
-					<input 
-						type="text" 
-						name="grind_size" 
-						placeholder="e.g. 18, Medium, 3.5, Fine"
-						class="w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4"/>
-					<p class="text-sm text-gray-500 mt-1">Enter a number (grinder setting) or description (e.g. "Medium", "Fine")</p>
-				</div>
-					
-					<!-- Grinder -->
-					<div>
-						<label class="block text-sm font-medium text-gray-700 mb-2">Grinder (optional)</label>
-						<input 
-							type="text" 
-							name="grinder" 
-							placeholder="e.g. Baratza Encore"
 							class="w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4"/>
 					</div>
 					
@@ -182,8 +240,12 @@ templ BrewForm(beans []*models.Bean, brew *models.Brew) {
 			function brewForm() {
 				return {
 					showNewBean: false,
+					showNewGrinder: false,
+					showNewBrewer: false,
 					rating: 5,
 					newBean: { name: '', origin: '', roastLevel: '', process: '', description: '' },
+					newGrinder: { name: '', grinderType: '', burrType: '', notes: '' },
+					newBrewer: { name: '', description: '' },
 					async addBean() {
 						if (!this.newBean.name) {
 							alert('Bean name is required');
@@ -193,6 +255,34 @@ templ BrewForm(beans []*models.Bean, brew *models.Brew) {
 							method: 'POST',
 							headers: { 'Content-Type': 'application/json' },
 							body: JSON.stringify(this.newBean)
+						});
+						if (response.ok) {
+							window.location.reload();
+						}
+					},
+					async addGrinder() {
+						if (!this.newGrinder.name) {
+							alert('Grinder name is required');
+							return;
+						}
+						const response = await fetch('/api/grinders', {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify(this.newGrinder)
+						});
+						if (response.ok) {
+							window.location.reload();
+						}
+					},
+					async addBrewer() {
+						if (!this.newBrewer.name) {
+							alert('Brewer name is required');
+							return;
+						}
+						const response = await fetch('/api/brewers', {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify(this.newBrewer)
 						});
 						if (response.ok) {
 							window.location.reload();

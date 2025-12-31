@@ -55,12 +55,16 @@ type Brew struct {
 	TimeSeconds  int       `json:"time_seconds"`
 	GrindSize    string    `json:"grind_size"`
 	Grinder      string    `json:"grinder"`
+	GrinderID    *int      `json:"grinder_id"`
+	BrewerID     *int      `json:"brewer_id"`
 	TastingNotes string    `json:"tasting_notes"`
 	Rating       int       `json:"rating"`
 	CreatedAt    time.Time `json:"created_at"`
 
 	// Joined data for display
-	Bean *Bean `json:"bean,omitempty"`
+	Bean       *Bean    `json:"bean,omitempty"`
+	GrinderObj *Grinder `json:"grinder_obj,omitempty"`
+	BrewerObj  *Brewer  `json:"brewer_obj,omitempty"`
 }
 
 type CreateBrewRequest struct {
@@ -70,6 +74,8 @@ type CreateBrewRequest struct {
 	TimeSeconds  int     `json:"time_seconds"`
 	GrindSize    string  `json:"grind_size"`
 	Grinder      string  `json:"grinder"`
+	GrinderID    *int    `json:"grinder_id"`
+	BrewerID     *int    `json:"brewer_id"`
 	TastingNotes string  `json:"tasting_notes"`
 	Rating       int     `json:"rating"`
 }

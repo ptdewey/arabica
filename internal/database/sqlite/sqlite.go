@@ -54,6 +54,7 @@ func (s *SQLiteStore) runMigrations() error {
 		"migrations/001_initial.sql",
 		"migrations/002_add_brewers_table.sql",
 		"migrations/003_update_grinders_schema.sql",
+		"migrations/004_update_brews_add_grinder_brewer_ids.sql",
 		// Future migrations go here
 	}
 
@@ -103,10 +104,10 @@ func (s *SQLiteStore) Close() error {
 func (s *SQLiteStore) CreateBrew(req *models.CreateBrewRequest, userID int) (*models.Brew, error) {
 	result, err := s.db.Exec(`
 		INSERT INTO brews (user_id, bean_id, method, temperature, time_seconds, 
-			grind_size, grinder, tasting_notes, rating)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+			grind_size, grinder, grinder_id, brewer_id, tasting_notes, rating)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`, userID, req.BeanID, req.Method, req.Temperature, req.TimeSeconds,
-		req.GrindSize, req.Grinder, req.TastingNotes, req.Rating)
+		req.GrindSize, req.Grinder, req.GrinderID, req.BrewerID, req.TastingNotes, req.Rating)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to create brew: %w", err)
@@ -125,23 +126,31 @@ func (s *SQLiteStore) GetBrew(id int) (*models.Brew, error) {
 		Bean: &models.Bean{
 			Roaster: &models.Roaster{},
 		},
+		GrinderObj: &models.Grinder{},
+		BrewerObj:  &models.Brewer{},
 	}
 
 	err := s.db.QueryRow(`
 		SELECT 
 			b.id, b.user_id, b.bean_id, b.method, b.temperature, 
-			b.time_seconds, b.grind_size, b.grinder, b.tasting_notes, b.rating, b.created_at,
+			b.time_seconds, b.grind_size, b.grinder, b.grinder_id, b.brewer_id, b.tasting_notes, b.rating, b.created_at,
 			bn.id, bn.name, bn.origin, bn.roast_level, bn.process, bn.description, bn.roaster_id,
-			COALESCE(r.id, 0), COALESCE(r.name, '')
+			COALESCE(r.id, 0), COALESCE(r.name, ''),
+			COALESCE(g.id, 0), COALESCE(g.name, ''),
+			COALESCE(br.id, 0), COALESCE(br.name, '')
 		FROM brews b
 		JOIN beans bn ON b.bean_id = bn.id
 		LEFT JOIN roasters r ON bn.roaster_id = r.id
+		LEFT JOIN grinders g ON b.grinder_id = g.id
+		LEFT JOIN brewers br ON b.brewer_id = br.id
 		WHERE b.id = ?
 	`, id).Scan(
 		&brew.ID, &brew.UserID, &brew.BeanID, &brew.Method, &brew.Temperature,
-		&brew.TimeSeconds, &brew.GrindSize, &brew.Grinder, &brew.TastingNotes, &brew.Rating, &brew.CreatedAt,
+		&brew.TimeSeconds, &brew.GrindSize, &brew.Grinder, &brew.GrinderID, &brew.BrewerID, &brew.TastingNotes, &brew.Rating, &brew.CreatedAt,
 		&brew.Bean.ID, &brew.Bean.Name, &brew.Bean.Origin, &brew.Bean.RoastLevel, &brew.Bean.Process, &brew.Bean.Description, &brew.Bean.RoasterID,
 		&brew.Bean.Roaster.ID, &brew.Bean.Roaster.Name,
+		&brew.GrinderObj.ID, &brew.GrinderObj.Name,
+		&brew.BrewerObj.ID, &brew.BrewerObj.Name,
 	)
 
 	if err != nil {
@@ -155,12 +164,16 @@ func (s *SQLiteStore) ListBrews(userID int) ([]*models.Brew, error) {
 	rows, err := s.db.Query(`
 		SELECT 
 			b.id, b.user_id, b.bean_id, b.method, b.temperature, 
-			b.time_seconds, b.grind_size, b.grinder, b.tasting_notes, b.rating, b.created_at,
+			b.time_seconds, b.grind_size, b.grinder, b.grinder_id, b.brewer_id, b.tasting_notes, b.rating, b.created_at,
 			bn.id, bn.name, bn.origin, bn.roast_level, bn.process, bn.description, bn.roaster_id,
-			COALESCE(r.id, 0), COALESCE(r.name, '')
+			COALESCE(r.id, 0), COALESCE(r.name, ''),
+			COALESCE(g.id, 0), COALESCE(g.name, ''),
+			COALESCE(br.id, 0), COALESCE(br.name, '')
 		FROM brews b
 		JOIN beans bn ON b.bean_id = bn.id
 		LEFT JOIN roasters r ON bn.roaster_id = r.id
+		LEFT JOIN grinders g ON b.grinder_id = g.id
+		LEFT JOIN brewers br ON b.brewer_id = br.id
 		WHERE b.user_id = ?
 		ORDER BY b.created_at DESC
 	`, userID)
@@ -176,13 +189,17 @@ func (s *SQLiteStore) ListBrews(userID int) ([]*models.Brew, error) {
 			Bean: &models.Bean{
 				Roaster: &models.Roaster{},
 			},
+			GrinderObj: &models.Grinder{},
+			BrewerObj:  &models.Brewer{},
 		}
 
 		err := rows.Scan(
 			&brew.ID, &brew.UserID, &brew.BeanID, &brew.Method, &brew.Temperature,
-			&brew.TimeSeconds, &brew.GrindSize, &brew.Grinder, &brew.TastingNotes, &brew.Rating, &brew.CreatedAt,
+			&brew.TimeSeconds, &brew.GrindSize, &brew.Grinder, &brew.GrinderID, &brew.BrewerID, &brew.TastingNotes, &brew.Rating, &brew.CreatedAt,
 			&brew.Bean.ID, &brew.Bean.Name, &brew.Bean.Origin, &brew.Bean.RoastLevel, &brew.Bean.Process, &brew.Bean.Description, &brew.Bean.RoasterID,
 			&brew.Bean.Roaster.ID, &brew.Bean.Roaster.Name,
+			&brew.GrinderObj.ID, &brew.GrinderObj.Name,
+			&brew.BrewerObj.ID, &brew.BrewerObj.Name,
 		)
 
 		if err != nil {
@@ -199,10 +216,10 @@ func (s *SQLiteStore) UpdateBrew(id int, req *models.CreateBrewRequest) error {
 	_, err := s.db.Exec(`
 		UPDATE brews 
 		SET bean_id = ?, method = ?, temperature = ?, time_seconds = ?,
-			grind_size = ?, grinder = ?, tasting_notes = ?, rating = ?
+			grind_size = ?, grinder = ?, grinder_id = ?, brewer_id = ?, tasting_notes = ?, rating = ?
 		WHERE id = ?
 	`, req.BeanID, req.Method, req.Temperature, req.TimeSeconds,
-		req.GrindSize, req.Grinder, req.TastingNotes, req.Rating, id)
+		req.GrindSize, req.Grinder, req.GrinderID, req.BrewerID, req.TastingNotes, req.Rating, id)
 
 	if err != nil {
 		return fmt.Errorf("failed to update brew: %w", err)

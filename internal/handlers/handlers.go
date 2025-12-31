@@ -42,7 +42,19 @@ func (h *Handler) HandleBrewNew(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	templates.BrewForm(beans, nil).Render(r.Context(), w)
+	grinders, err := h.store.ListGrinders()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	brewers, err := h.store.ListBrewers()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	templates.BrewForm(beans, grinders, brewers, nil).Render(r.Context(), w)
 }
 
 // Create new brew
@@ -57,6 +69,18 @@ func (h *Handler) HandleBrewCreate(w http.ResponseWriter, r *http.Request) {
 	timeSeconds, _ := strconv.Atoi(r.FormValue("time_seconds"))
 	rating, _ := strconv.Atoi(r.FormValue("rating"))
 
+	var grinderID *int
+	if gIDStr := r.FormValue("grinder_id"); gIDStr != "" {
+		gID, _ := strconv.Atoi(gIDStr)
+		grinderID = &gID
+	}
+
+	var brewerID *int
+	if bIDStr := r.FormValue("brewer_id"); bIDStr != "" {
+		bID, _ := strconv.Atoi(bIDStr)
+		brewerID = &bID
+	}
+
 	req := &models.CreateBrewRequest{
 		BeanID:       beanID,
 		Method:       r.FormValue("method"),
@@ -64,6 +88,8 @@ func (h *Handler) HandleBrewCreate(w http.ResponseWriter, r *http.Request) {
 		TimeSeconds:  timeSeconds,
 		GrindSize:    r.FormValue("grind_size"),
 		Grinder:      r.FormValue("grinder"),
+		GrinderID:    grinderID,
+		BrewerID:     brewerID,
 		TastingNotes: r.FormValue("tasting_notes"),
 		Rating:       rating,
 	}
