@@ -12,8 +12,8 @@ templ Layout(title string) {
     <title>{ title } - Arabica</title>
     <link rel="stylesheet" href="/static/css/output.css" />
     <link rel="manifest" href="/static/manifest.json" />
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-    <script src="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js" defer></script>
+    <script src="https://unpkg.com/htmx.org@2.0.8"></script>
+    <script src="https://unpkg.com/alpinejs@3.15.3/dist/cdn.min.js" defer></script>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/static/service-worker.js')

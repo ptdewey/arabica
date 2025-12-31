@@ -27,11 +27,14 @@
           # Vendor hash for Go dependencies
           vendorHash = "sha256-7QYmui8+jyG/QOds0YfZfgsKqZcvm/RLQCkDFUk+xUc=";
 
-          nativeBuildInputs = with pkgs; [ templ ];
+          nativeBuildInputs = with pkgs; [ templ tailwindcss ];
 
           preBuild = ''
             # Generate templates before building
             templ generate
+            
+            # Build Tailwind CSS
+            tailwindcss -i web/static/css/style.css -o web/static/css/output.css --minify
           '';
 
           # Build output goes to bin/arabica
@@ -43,12 +46,24 @@
 
           installPhase = ''
             mkdir -p $out/bin
-            cp arabica $out/bin/
+            mkdir -p $out/share/arabica
 
             # Copy static files and migrations
-            mkdir -p $out/share/arabica
             cp -r web $out/share/arabica/
             cp -r migrations $out/share/arabica/
+
+            # Install the actual binary
+            cp arabica $out/bin/arabica-unwrapped
+
+            # Create wrapper script that changes to the share directory
+            cat > $out/bin/arabica <<'EOF'
+            #!/bin/sh
+            SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+            SHARE_DIR="$SCRIPT_DIR/../share/arabica"
+            cd "$SHARE_DIR"
+            exec "$SCRIPT_DIR/arabica-unwrapped" "$@"
+            EOF
+            chmod +x $out/bin/arabica
           '';
 
           meta = with pkgs.lib; {

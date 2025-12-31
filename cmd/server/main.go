@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"arabica/internal/database/sqlite"
 	"arabica/internal/handlers"
@@ -13,7 +14,16 @@ func main() {
 	// Get database path from env or use default
 	dbPath := os.Getenv("DB_PATH")
 	if dbPath == "" {
-		dbPath = "./arabica.db"
+		// Try XDG_DATA_HOME first, then fallback to HOME, then current dir
+		if xdgData := os.Getenv("XDG_DATA_HOME"); xdgData != "" {
+			dbPath = filepath.Join(xdgData, "arabica", "arabica.db")
+			os.MkdirAll(filepath.Dir(dbPath), 0755)
+		} else if home := os.Getenv("HOME"); home != "" {
+			dbPath = filepath.Join(home, ".local", "share", "arabica", "arabica.db")
+			os.MkdirAll(filepath.Dir(dbPath), 0755)
+		} else {
+			dbPath = "./arabica.db"
+		}
 	}
 
 	// Initialize database
@@ -22,6 +32,8 @@ func main() {
 		log.Fatalf("Failed to initialize database: %v", err)
 	}
 	defer store.Close()
+
+	log.Printf("Using database: %s", dbPath)
 
 	// Initialize handlers
 	h := handlers.NewHandler(store)
