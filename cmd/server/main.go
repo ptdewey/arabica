@@ -34,7 +34,9 @@ func main() {
 	mux.HandleFunc("GET /manage", h.HandleManage)
 	mux.HandleFunc("GET /brews", h.HandleBrewList)
 	mux.HandleFunc("GET /brews/new", h.HandleBrewNew)
+	mux.HandleFunc("GET /brews/{id}", h.HandleBrewEdit)
 	mux.HandleFunc("POST /brews", h.HandleBrewCreate)
+	mux.HandleFunc("PUT /brews/{id}", h.HandleBrewUpdate)
 	mux.HandleFunc("DELETE /brews/{id}", h.HandleBrewDelete)
 	mux.HandleFunc("GET /brews/export", h.HandleBrewExport)
 
@@ -62,11 +64,12 @@ func main() {
 	// Get port from env or use default
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080"
+		port = "18910"
 	}
 
-	log.Printf("Starting Arabica server on http://localhost:%s", port)
-	if err := http.ListenAndServe(":"+port, mux); err != nil {
+	// TODO: configure port and address via env vars
+	log.Printf("Starting Arabica server on http://0.0.0.0:%s", port)
+	if err := http.ListenAndServe("0.0.0.0:"+port, mux); err != nil {
 		log.Fatalf("Server failed to start: %v", err)
 	}
 }

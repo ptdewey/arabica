@@ -35,6 +35,10 @@ func formatID(id int) string {
 	return fmt.Sprintf("%d", id)
 }
 
+func formatInt(val int) string {
+	return fmt.Sprintf("%d", val)
+}
+
 func formatRoasterID(id *int) string {
 	if id == nil {
 		return "null"

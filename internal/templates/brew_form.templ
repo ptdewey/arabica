@@ -34,7 +34,11 @@ templ BrewForm(beans []*models.Bean, grinders []*models.Grinder, brewers []*mode
 								class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4">
 								<option value="">Select a bean...</option>
 							for _, bean := range beans {
-								<option value={ formatID(bean.ID) }>
+								<option 
+									value={ formatID(bean.ID) }
+									if brew != nil && brew.BeanID == bean.ID {
+										selected
+									}>
 									if bean.Name != "" {
 										{ bean.Name } ({ bean.Origin } - { bean.RoastLevel })
 									} else {
@@ -85,7 +89,11 @@ templ BrewForm(beans []*models.Bean, grinders []*models.Grinder, brewers []*mode
 								class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4">
 								<option value="">Select a grinder...</option>
 							for _, grinder := range grinders {
-								<option value={ formatID(grinder.ID) }>
+								<option 
+									value={ formatID(grinder.ID) }
+									if brew != nil && brew.GrinderID != nil && *brew.GrinderID == grinder.ID {
+										selected
+									}>
 									{ grinder.Name }
 								</option>
 							}
@@ -129,6 +137,9 @@ templ BrewForm(beans []*models.Bean, grinders []*models.Grinder, brewers []*mode
 					<input 
 						type="text" 
 						name="grind_size" 
+						if brew != nil {
+							value={ brew.GrindSize }
+						}
 						placeholder="e.g. 18, Medium, 3.5, Fine"
 						class="w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4"/>
 					<p class="text-sm text-gray-500 mt-1">Enter a number (grinder setting) or description (e.g. "Medium", "Fine")</p>
@@ -143,7 +154,11 @@ templ BrewForm(beans []*models.Bean, grinders []*models.Grinder, brewers []*mode
 								class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4">
 								<option value="">Select brew method...</option>
 							for _, brewer := range brewers {
-								<option value={ formatID(brewer.ID) }>
+								<option 
+									value={ formatID(brewer.ID) }
+									if brew != nil && brew.BrewerID != nil && *brew.BrewerID == brewer.ID {
+										selected
+									}>
 									{ brewer.Name }
 								</option>
 							}
@@ -177,6 +192,9 @@ templ BrewForm(beans []*models.Bean, grinders []*models.Grinder, brewers []*mode
 							type="number" 
 							name="temperature" 
 							step="0.1"
+							if brew != nil && brew.Temperature > 0 {
+								value={ formatTemp(brew.Temperature) }
+							}
 							placeholder="e.g. 93.5"
 							class="w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4"/>
 					</div>
@@ -187,6 +205,9 @@ templ BrewForm(beans []*models.Bean, grinders []*models.Grinder, brewers []*mode
 						<input 
 							type="number" 
 							name="time_seconds" 
+							if brew != nil && brew.TimeSeconds > 0 {
+								value={ formatInt(brew.TimeSeconds) }
+							}
 							placeholder="e.g. 180"
 							class="w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4"/>
 					</div>
@@ -198,7 +219,8 @@ templ BrewForm(beans []*models.Bean, grinders []*models.Grinder, brewers []*mode
 							name="tasting_notes" 
 							rows="4"
 							placeholder="Describe the flavors, aroma, and your thoughts..."
-							class="w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4"></textarea>
+							class="w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4">if brew != nil {
+{ brew.TastingNotes }}</textarea>
 					</div>
 					
 					<!-- Rating -->
@@ -209,7 +231,11 @@ templ BrewForm(beans []*models.Bean, grinders []*models.Grinder, brewers []*mode
 							name="rating" 
 							min="1" 
 							max="10" 
-							value="5"
+							if brew != nil {
+								value={ formatInt(brew.Rating) }
+							} else {
+								value="5"
+							}
 							x-model="rating"
 							class="w-full"/>
 						<div class="text-center text-2xl font-bold text-brown-600">
@@ -242,7 +268,9 @@ templ BrewForm(beans []*models.Bean, grinders []*models.Grinder, brewers []*mode
 					showNewBean: false,
 					showNewGrinder: false,
 					showNewBrewer: false,
-					rating: 5,
+					rating: if brew != nil {
+{ formatInt(brew.Rating) }} else {
+5},
 					newBean: { name: '', origin: '', roastLevel: '', process: '', description: '' },
 					newGrinder: { name: '', grinderType: '', burrType: '', notes: '' },
 					newBrewer: { name: '', description: '' },

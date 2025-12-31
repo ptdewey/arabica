@@ -57,6 +57,42 @@ func (h *Handler) HandleBrewNew(w http.ResponseWriter, r *http.Request) {
 	templates.BrewForm(beans, grinders, brewers, nil).Render(r.Context(), w)
 }
 
+// Show edit brew form
+func (h *Handler) HandleBrewEdit(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	brew, err := h.store.GetBrew(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	beans, err := h.store.ListBeans()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	grinders, err := h.store.ListGrinders()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	brewers, err := h.store.ListBrewers()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	templates.BrewForm(beans, grinders, brewers, brew).Render(r.Context(), w)
+}
+
 // Create new brew
 func (h *Handler) HandleBrewCreate(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
@@ -95,6 +131,61 @@ func (h *Handler) HandleBrewCreate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_, err := h.store.CreateBrew(req, 1) // Default user ID = 1
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Redirect to brew list
+	w.Header().Set("HX-Redirect", "/brews")
+	w.WriteHeader(http.StatusOK)
+}
+
+// Update existing brew
+func (h *Handler) HandleBrewUpdate(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	beanID, _ := strconv.Atoi(r.FormValue("bean_id"))
+	temperature, _ := strconv.ParseFloat(r.FormValue("temperature"), 64)
+	timeSeconds, _ := strconv.Atoi(r.FormValue("time_seconds"))
+	rating, _ := strconv.Atoi(r.FormValue("rating"))
+
+	var grinderID *int
+	if gIDStr := r.FormValue("grinder_id"); gIDStr != "" {
+		gID, _ := strconv.Atoi(gIDStr)
+		grinderID = &gID
+	}
+
+	var brewerID *int
+	if bIDStr := r.FormValue("brewer_id"); bIDStr != "" {
+		bID, _ := strconv.Atoi(bIDStr)
+		brewerID = &bID
+	}
+
+	req := &models.CreateBrewRequest{
+		BeanID:       beanID,
+		Method:       r.FormValue("method"),
+		Temperature:  temperature,
+		TimeSeconds:  timeSeconds,
+		GrindSize:    r.FormValue("grind_size"),
+		Grinder:      r.FormValue("grinder"),
+		GrinderID:    grinderID,
+		BrewerID:     brewerID,
+		TastingNotes: r.FormValue("tasting_notes"),
+		Rating:       rating,
+	}
+
+	err = h.store.UpdateBrew(id, req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

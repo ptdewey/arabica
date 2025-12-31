@@ -1,43 +1,46 @@
 package templates
 
 templ Layout(title string) {
-	<!DOCTYPE html>
-	<html lang="en">
-		<head>
-			<meta charset="UTF-8"/>
-			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-			<meta name="description" content="Arabica - Coffee brew tracker"/>
-			<meta name="theme-color" content="#4a2c2a"/>
-			<title>{ title } - Arabica</title>
-		<link rel="stylesheet" href="/static/css/output.css"/>
-		<link rel="manifest" href="/static/manifest.json"/>
-		<script src="https://unpkg.com/htmx.org@1.9.10"></script>
-		<script src="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js" defer></script>
-		<script>
-			if ('serviceWorker' in navigator) {
-				navigator.serviceWorker.register('/static/service-worker.js')
-					.then(() => console.log('Service Worker registered'))
-					.catch((err) => console.log('Service Worker registration failed:', err));
-			}
-		</script>
-	</head>
-	<body class="bg-gray-50 min-h-screen">
-		<nav class="bg-brown-800 text-white shadow-lg">
-			<div class="container mx-auto px-4 py-4">
-				<div class="flex items-center justify-between">
-					<h1 class="text-2xl font-bold hidden md:block">☕ Arabica</h1>
-				<div class="space-x-4">
-					<a href="/" class="hover:text-brown-200">Home</a>
-					<a href="/brews" class="hover:text-brown-200">Brews</a>
-					<a href="/brews/new" class="hover:text-brown-200">New Brew</a>
-					<a href="/manage" class="hover:text-brown-200">Manage</a>
-				</div>
-				</div>
-			</div>
-		</nav>
-			<main class="container mx-auto px-4 py-8">
-				{ children... }
-			</main>
-		</body>
-	</html>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Arabica - Coffee brew tracker" />
+    <meta name="theme-color" content="#4a2c2a" />
+    <title>{ title } - Arabica</title>
+    <link rel="stylesheet" href="/static/css/output.css" />
+    <link rel="manifest" href="/static/manifest.json" />
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js" defer></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/service-worker.js')
+                .then(() => console.log('Service Worker registered'))
+                .catch((err) => console.log('Service Worker registration failed:', err));
+        }
+    </script>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+    <nav class="bg-brown-800 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-bold hidden md:block">☕ Arabica</h1>
+                <div class="space-x-4">
+                    <a href="/" class="hover:text-brown-200">Home</a>
+                    <a href="/brews" class="hover:text-brown-200">Brews</a>
+                    <a href="/brews/new" class="hover:text-brown-200">New Brew</a>
+                    <a href="/manage" class="hover:text-brown-200">Manage</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <main class="container mx-auto px-4 py-8">
+        { children... }
+    </main>
+</body>
+
+</html>
 }
