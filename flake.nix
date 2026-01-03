@@ -1,5 +1,5 @@
 {
-  description = "Dev Shells Flake";
+  description = "Arabica - Coffee brew tracking application";
   inputs = { nixpkgs.url = "nixpkgs/nixpkgs-unstable"; };
   outputs = { nixpkgs, self, ... }:
     let
@@ -13,58 +13,7 @@
       });
 
       packages = forAllSystems (pkgs: system: rec {
-        arabica = pkgs.buildGoModule {
-          pname = "arabica";
-          version = "0.1.0";
-          src = ./.;
-
-          # Vendor hash for Go dependencies
-          vendorHash = "sha256-4Z6KAxox3EY9RGtFKUcqxtB/kj3Ed+o+ggPwtLSPctU=";
-
-          nativeBuildInputs = with pkgs; [ tailwindcss ];
-
-          preBuild = ''
-            # Build Tailwind CSS
-            tailwindcss -i web/static/css/style.css -o web/static/css/output.css --minify
-          '';
-
-          # Build output goes to bin/arabica
-          buildPhase = ''
-            runHook preBuild
-            go build -o arabica cmd/server/main.go
-            runHook postBuild
-          '';
-
-          installPhase = ''
-            mkdir -p $out/bin
-            mkdir -p $out/share/arabica
-
-            # Copy static files, migrations, and templates
-            cp -r web $out/share/arabica/
-            cp -r migrations $out/share/arabica/
-            cp -r internal $out/share/arabica/
-
-            # Install the actual binary
-            cp arabica $out/bin/arabica-unwrapped
-
-            # Create wrapper script that changes to the share directory
-            cat > $out/bin/arabica <<'EOF'
-            #!/bin/sh
-            SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
-            SHARE_DIR="$SCRIPT_DIR/../share/arabica"
-            cd "$SHARE_DIR"
-            exec "$SCRIPT_DIR/arabica-unwrapped" "$@"
-            EOF
-            chmod +x $out/bin/arabica
-          '';
-
-          meta = with pkgs.lib; {
-            description = "Arabica - Coffee brew tracker";
-            license = licenses.mit;
-            platforms = platforms.linux;
-          };
-        };
-
+        arabica = pkgs.callPackage ./default.nix { };
         default = arabica;
       });
 
@@ -74,5 +23,7 @@
           program = "${self.packages.${system}.arabica}/bin/arabica";
         };
       });
+
+      nixosModules.default = import ./module.nix;
     };
 }
