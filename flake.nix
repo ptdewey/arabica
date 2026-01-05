@@ -8,8 +8,7 @@
         (system: function nixpkgs.legacyPackages.${system} system);
     in {
       devShells = forAllSystems (pkgs: system: {
-        default =
-          pkgs.mkShell { packages = with pkgs; [ go tailwindcss ]; };
+        default = pkgs.mkShell { packages = with pkgs; [ go tailwindcss ]; };
       });
 
       packages = forAllSystems (pkgs: system: rec {

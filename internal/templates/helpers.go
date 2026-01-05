@@ -11,7 +11,14 @@ func formatTemp(temp float64) string {
 	if temp == 0 {
 		return "N/A"
 	}
-	return fmt.Sprintf("%.1f°C", temp)
+
+	// REFACTOR: This probably isn't the best way to deal with units
+	unit := 'C'
+	if temp > 100 {
+		unit = 'F'
+	}
+
+	return fmt.Sprintf("%.1f°%c", temp, unit)
 }
 
 func formatTempValue(temp float64) string {
