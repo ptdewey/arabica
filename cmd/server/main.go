@@ -92,7 +92,8 @@ func main() {
 		log.Printf("Using localhost OAuth mode (for development)")
 	}
 
-	scopes := []string{"atproto", "transition:generic"}
+	// FIX: trim down scopes to not need full bluesky perms?
+	scopes := []string{"atproto", "repo:social.arabica.brew", "repo:social.arabica.brewer"}
 
 	oauthManager, err := atproto.NewOAuthManager(clientID, redirectURI, scopes)
 	if err != nil {
