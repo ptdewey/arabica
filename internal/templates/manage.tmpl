@@ -22,9 +22,9 @@
                 });
             },
 
-            editBean(id, name, origin, roast_level, process, description, roaster_id) {
+            editBean(id, name, origin, roast_level, process, description, roaster_rkey) {
                 this.editingBean = id;
-                this.beanForm = {name, origin, roast_level, process, description, roaster_id: roaster_id || null};
+                this.beanForm = {name, origin, roast_level, process, description, roaster_rkey: roaster_rkey || ''};
                 this.showBeanForm = true;
             },
 
@@ -255,7 +255,7 @@
                         <td class="px-6 py-4 text-sm text-gray-900">{{.Process}}</td>
                         <td class="px-6 py-4 text-sm text-gray-500">{{.Description}}</td>
                         <td class="px-6 py-4 text-sm font-medium space-x-2">
-                            <button @click="editBean({{.ID}}, '{{.Name}}', '{{.Origin}}', '{{.RoastLevel}}', '{{.Process}}', '{{.Description}}', {{if .RoasterID}}{{.RoasterID}}{{else}}null{{end}})"
+                            <button @click="editBean({{.ID}}, '{{.Name}}', '{{.Origin}}', '{{.RoastLevel}}', '{{.Process}}', '{{.Description}}', '{{.RoasterRKey}}')"
                                 class="text-blue-600 hover:text-blue-900">Edit</button>
                             <button @click="deleteBean({{.ID}})"
                                 class="text-red-600 hover:text-red-900">Delete</button>

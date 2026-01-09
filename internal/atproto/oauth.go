@@ -11,13 +11,22 @@ import (
 	"github.com/bluesky-social/indigo/atproto/syntax"
 )
 
+var scopes = []string{
+	"atproto",
+	"repo:com.arabica.bean",
+	"repo:com.arabica.brew",
+	"repo:com.arabica.brewer",
+	"repo:com.arabica.grinder",
+	"repo:com.arabica.roaster",
+}
+
 // OAuthManager wraps indigo's OAuth client for managing user authentication
 type OAuthManager struct {
 	app *oauth.ClientApp
 }
 
 // NewOAuthManager creates a new OAuth manager with the given configuration
-func NewOAuthManager(clientID, redirectURI string, scopes []string) (*OAuthManager, error) {
+func NewOAuthManager(clientID, redirectURI string) (*OAuthManager, error) {
 	var config oauth.ClientConfig
 
 	// Check if we should use localhost config

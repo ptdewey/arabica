@@ -93,9 +93,9 @@ func main() {
 	}
 
 	// FIX: trim down scopes to not need full bluesky perms?
-	scopes := []string{"atproto", "repo:social.arabica.brew", "repo:social.arabica.brewer"}
-
-	oauthManager, err := atproto.NewOAuthManager(clientID, redirectURI, scopes)
+	// TODO: find a way of generating lexicons from data models?
+	// - also automatically add the related scopes
+	oauthManager, err := atproto.NewOAuthManager(clientID, redirectURI)
 	if err != nil {
 		log.Fatalf("Failed to initialize OAuth: %v", err)
 	}
@@ -107,7 +107,6 @@ func main() {
 		log.Printf("  Client ID: %s", clientID)
 	}
 	log.Printf("  Redirect URI: %s", redirectURI)
-	log.Printf("  Scopes: %v", scopes)
 
 	// Initialize atproto client
 	atprotoClient := atproto.NewClient(oauthManager)

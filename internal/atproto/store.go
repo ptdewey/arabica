@@ -314,9 +314,12 @@ func (s *AtprotoStore) GetBean(id int) (*models.Bean, error) {
 
 	// Resolve roaster reference if present
 	if roasterRef, ok := output.Value["roasterRef"].(string); ok && roasterRef != "" {
-		bean.Roaster, err = ResolveRoasterRef(s.ctx, s.client, roasterRef, s.sessionID)
-		if err != nil {
-			fmt.Printf("Warning: failed to resolve roaster reference: %v\n", err)
+		// Only try to resolve if it looks like a valid AT-URI (not just "0" or a numeric ID)
+		if len(roasterRef) > 10 && (roasterRef[:5] == "at://" || roasterRef[:4] == "did:") {
+			bean.Roaster, err = ResolveRoasterRef(s.ctx, s.client, roasterRef, s.sessionID)
+			if err != nil {
+				fmt.Printf("Warning: failed to resolve roaster reference: %v\n", err)
+			}
 		}
 	}
 
@@ -342,9 +345,12 @@ func (s *AtprotoStore) ListBeans() ([]*models.Bean, error) {
 
 		// Resolve roaster reference if present
 		if roasterRef, ok := rec.Value["roasterRef"].(string); ok && roasterRef != "" {
-			bean.Roaster, err = ResolveRoasterRef(s.ctx, s.client, roasterRef, s.sessionID)
-			if err != nil {
-				fmt.Printf("Warning: failed to resolve roaster reference: %v\n", err)
+			// Only try to resolve if it looks like a valid AT-URI
+			if len(roasterRef) > 10 && (roasterRef[:5] == "at://" || roasterRef[:4] == "did:") {
+				bean.Roaster, err = ResolveRoasterRef(s.ctx, s.client, roasterRef, s.sessionID)
+				if err != nil {
+					fmt.Printf("Warning: failed to resolve roaster reference: %v\n", err)
+				}
 			}
 		}
 

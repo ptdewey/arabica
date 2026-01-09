@@ -595,7 +595,14 @@ func (h *Handler) HandleGrinderCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	grinder, err := h.store.CreateGrinder(&req)
+	// Require authentication
+	store, authenticated := h.getAtprotoStore(r)
+	if !authenticated {
+		http.Error(w, "Authentication required", http.StatusUnauthorized)
+		return
+	}
+
+	grinder, err := store.CreateGrinder(&req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -658,7 +665,14 @@ func (h *Handler) HandleBrewerCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	brewer, err := h.store.CreateBrewer(&req)
+	// Require authentication
+	store, authenticated := h.getAtprotoStore(r)
+	if !authenticated {
+		http.Error(w, "Authentication required", http.StatusUnauthorized)
+		return
+	}
+
+	brewer, err := store.CreateBrewer(&req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
