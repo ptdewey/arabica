@@ -19,14 +19,13 @@ type Config struct {
 }
 
 type Handler struct {
-	store         database.Store
 	oauth         *atproto.OAuthManager
 	atprotoClient *atproto.Client
 	config        Config
 }
 
-func NewHandler(store database.Store) *Handler {
-	return &Handler{store: store}
+func NewHandler() *Handler {
+	return &Handler{}
 }
 
 // SetConfig sets the handler configuration

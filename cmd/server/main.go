@@ -4,11 +4,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"path/filepath"
 	"time"
 
 	"arabica/internal/atproto"
-	"arabica/internal/database/sqlite"
 	"arabica/internal/handlers"
 	"arabica/internal/routing"
 
@@ -46,30 +44,6 @@ func main() {
 	}
 
 	log.Info().Msg("Starting Arabica Coffee Tracker")
-
-	// Get database path from env or use default
-	dbPath := os.Getenv("DB_PATH")
-	if dbPath == "" {
-		// Try XDG_DATA_HOME first, then fallback to HOME, then current dir
-		if xdgData := os.Getenv("XDG_DATA_HOME"); xdgData != "" {
-			dbPath = filepath.Join(xdgData, "arabica", "arabica.db")
-			os.MkdirAll(filepath.Dir(dbPath), 0755)
-		} else if home := os.Getenv("HOME"); home != "" {
-			dbPath = filepath.Join(home, ".local", "share", "arabica", "arabica.db")
-			os.MkdirAll(filepath.Dir(dbPath), 0755)
-		} else {
-			dbPath = "./arabica.db"
-		}
-	}
-
-	// Initialize database
-	store, err := sqlite.NewSQLiteStore(dbPath)
-	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to initialize database")
-	}
-	defer store.Close()
-
-	log.Info().Str("path", dbPath).Msg("Database initialized")
 
 	// Get port from env or use default
 	port := os.Getenv("PORT")
@@ -115,7 +89,7 @@ func main() {
 	secureCookies := os.Getenv("SECURE_COOKIES") == "true"
 
 	// Initialize handlers
-	h := handlers.NewHandler(store)
+	h := handlers.NewHandler()
 	h.SetConfig(handlers.Config{
 		SecureCookies: secureCookies,
 	})
