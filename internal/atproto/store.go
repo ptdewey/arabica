@@ -413,18 +413,11 @@ func (s *AtprotoStore) ListBeans() ([]*models.Bean, error) {
 			bean.RKey = components.RKey
 		}
 
-		// Resolve roaster reference if present
+		// Extract roaster rkey from reference (but don't fetch it - avoids N+1)
+		// The caller can link roasters using LinkBeansToRoasters after fetching both
 		if roasterRef, ok := rec.Value["roasterRef"].(string); ok && roasterRef != "" {
-			// Extract rkey from roaster ref
 			if components, err := ResolveATURI(roasterRef); err == nil {
 				bean.RoasterRKey = components.RKey
-			}
-			// Only try to resolve if it looks like a valid AT-URI
-			if len(roasterRef) > 10 && (roasterRef[:5] == "at://" || roasterRef[:4] == "did:") {
-				bean.Roaster, err = ResolveRoasterRef(ctx, s.client, roasterRef, s.sessionID)
-				if err != nil {
-					log.Warn().Err(err).Str("uri", rec.URI).Str("roaster_ref", roasterRef).Msg("Failed to resolve roaster reference")
-				}
 			}
 		}
 
@@ -432,6 +425,23 @@ func (s *AtprotoStore) ListBeans() ([]*models.Bean, error) {
 	}
 
 	return beans, nil
+}
+
+// LinkBeansToRoasters populates the Roaster field on beans using a pre-fetched roasters map
+// This avoids N+1 queries when listing beans with their roasters
+func LinkBeansToRoasters(beans []*models.Bean, roasters []*models.Roaster) {
+	// Build a map of rkey -> roaster for O(1) lookups
+	roasterMap := make(map[string]*models.Roaster, len(roasters))
+	for _, r := range roasters {
+		roasterMap[r.RKey] = r
+	}
+
+	// Link beans to their roasters
+	for _, bean := range beans {
+		if bean.RoasterRKey != "" {
+			bean.Roaster = roasterMap[bean.RoasterRKey]
+		}
+	}
 }
 
 func (s *AtprotoStore) UpdateBeanByRKey(rkey string, bean *models.UpdateBeanRequest) error {

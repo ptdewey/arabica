@@ -436,29 +436,63 @@ func (h *Handler) HandleManage(w http.ResponseWriter, r *http.Request) {
 
 	didStr, _ := atproto.GetAuthenticatedDID(r.Context())
 
-	beans, err := store.ListBeans()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	// Fetch all collections in parallel for better performance
+	type result struct {
+		beans    []*models.Bean
+		roasters []*models.Roaster
+		grinders []*models.Grinder
+		brewers  []*models.Brewer
+		err      error
+		which    string
 	}
 
-	roasters, err := store.ListRoasters()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	results := make(chan result, 4)
+
+	// Launch parallel fetches
+	go func() {
+		beans, err := store.ListBeans()
+		results <- result{beans: beans, err: err, which: "beans"}
+	}()
+	go func() {
+		roasters, err := store.ListRoasters()
+		results <- result{roasters: roasters, err: err, which: "roasters"}
+	}()
+	go func() {
+		grinders, err := store.ListGrinders()
+		results <- result{grinders: grinders, err: err, which: "grinders"}
+	}()
+	go func() {
+		brewers, err := store.ListBrewers()
+		results <- result{brewers: brewers, err: err, which: "brewers"}
+	}()
+
+	// Collect results
+	var beans []*models.Bean
+	var roasters []*models.Roaster
+	var grinders []*models.Grinder
+	var brewers []*models.Brewer
+
+	for i := 0; i < 4; i++ {
+		res := <-results
+		if res.err != nil {
+			http.Error(w, res.err.Error(), http.StatusInternalServerError)
+			return
+		}
+		switch res.which {
+		case "beans":
+			beans = res.beans
+		case "roasters":
+			roasters = res.roasters
+		case "grinders":
+			grinders = res.grinders
+		case "brewers":
+			brewers = res.brewers
+		}
 	}
 
-	grinders, err := store.ListGrinders()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	brewers, err := store.ListBrewers()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	// Link beans to their roasters using the pre-fetched roasters
+	// This avoids N+1 queries when using ATProto store
+	atproto.LinkBeansToRoasters(beans, roasters)
 
 	if err := templates.RenderManage(w, beans, roasters, grinders, brewers, authenticated, didStr); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
