@@ -35,6 +35,9 @@ func BrewToRecord(brew *models.Brew, beanURI, grinderURI, brewerURI string) (map
 	if brew.WaterAmount > 0 {
 		record["waterAmount"] = brew.WaterAmount
 	}
+	if brew.CoffeeAmount > 0 {
+		record["coffeeAmount"] = brew.CoffeeAmount
+	}
 	if brew.TimeSeconds > 0 {
 		record["timeSeconds"] = brew.TimeSeconds
 	}
@@ -112,6 +115,9 @@ func RecordToBrew(record map[string]interface{}, atURI string) (*models.Brew, er
 	}
 	if waterAmount, ok := record["waterAmount"].(float64); ok {
 		brew.WaterAmount = int(waterAmount)
+	}
+	if coffeeAmount, ok := record["coffeeAmount"].(float64); ok {
+		brew.CoffeeAmount = int(coffeeAmount)
 	}
 	if timeSeconds, ok := record["timeSeconds"].(float64); ok {
 		brew.TimeSeconds = int(timeSeconds)

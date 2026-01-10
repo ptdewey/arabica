@@ -53,6 +53,7 @@ type Brew struct {
 	Method       string    `json:"method,omitempty"`
 	Temperature  float64   `json:"temperature"`
 	WaterAmount  int       `json:"water_amount"`
+	CoffeeAmount int       `json:"coffee_amount"`
 	TimeSeconds  int       `json:"time_seconds"`
 	GrindSize    string    `json:"grind_size"`
 	GrinderRKey  string    `json:"grinder_rkey"`
@@ -73,6 +74,7 @@ type CreateBrewRequest struct {
 	Method       string           `json:"method"`
 	Temperature  float64          `json:"temperature"`
 	WaterAmount  int              `json:"water_amount"`
+	CoffeeAmount int              `json:"coffee_amount"`
 	TimeSeconds  int              `json:"time_seconds"`
 	GrindSize    string           `json:"grind_size"`
 	GrinderRKey  string           `json:"grinder_rkey"`

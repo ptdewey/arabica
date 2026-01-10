@@ -83,7 +83,64 @@ func (s *Service) GetRecentBrews(ctx context.Context, limit int) ([]*FeedItem, e
 				return
 			}
 
-			// Convert records to Brew models
+			// Fetch all beans, roasters, brewers, and grinders for this user to resolve references
+			beansOutput, _ := s.publicClient.ListRecords(ctx, did, atproto.NSIDBean, 100)
+			roastersOutput, _ := s.publicClient.ListRecords(ctx, did, atproto.NSIDRoaster, 100)
+			brewersOutput, _ := s.publicClient.ListRecords(ctx, did, atproto.NSIDBrewer, 100)
+			grindersOutput, _ := s.publicClient.ListRecords(ctx, did, atproto.NSIDGrinder, 100)
+
+			// Build lookup maps (keyed by AT-URI)
+			beanMap := make(map[string]*models.Bean)
+			beanRoasterRefMap := make(map[string]string) // bean URI -> roaster URI
+			roasterMap := make(map[string]*models.Roaster)
+			brewerMap := make(map[string]*models.Brewer)
+			grinderMap := make(map[string]*models.Grinder)
+
+			// Populate bean map
+			if beansOutput != nil {
+				for _, beanRecord := range beansOutput.Records {
+					bean, err := atproto.RecordToBean(beanRecord.Value, beanRecord.URI)
+					if err == nil {
+						beanMap[beanRecord.URI] = bean
+						// Store roaster reference if present
+						if roasterRef, ok := beanRecord.Value["roasterRef"].(string); ok && roasterRef != "" {
+							beanRoasterRefMap[beanRecord.URI] = roasterRef
+						}
+					}
+				}
+			}
+
+			// Populate roaster map
+			if roastersOutput != nil {
+				for _, roasterRecord := range roastersOutput.Records {
+					roaster, err := atproto.RecordToRoaster(roasterRecord.Value, roasterRecord.URI)
+					if err == nil {
+						roasterMap[roasterRecord.URI] = roaster
+					}
+				}
+			}
+
+			// Populate brewer map
+			if brewersOutput != nil {
+				for _, brewerRecord := range brewersOutput.Records {
+					brewer, err := atproto.RecordToBrewer(brewerRecord.Value, brewerRecord.URI)
+					if err == nil {
+						brewerMap[brewerRecord.URI] = brewer
+					}
+				}
+			}
+
+			// Populate grinder map
+			if grindersOutput != nil {
+				for _, grinderRecord := range grindersOutput.Records {
+					grinder, err := atproto.RecordToGrinder(grinderRecord.Value, grinderRecord.URI)
+					if err == nil {
+						grinderMap[grinderRecord.URI] = grinder
+					}
+				}
+			}
+
+			// Convert records to Brew models and resolve references
 			brews := make([]*models.Brew, 0, len(brewsOutput.Records))
 			for _, record := range brewsOutput.Records {
 				brew, err := atproto.RecordToBrew(record.Value, record.URI)
@@ -91,6 +148,35 @@ func (s *Service) GetRecentBrews(ctx context.Context, limit int) ([]*FeedItem, e
 					log.Warn().Err(err).Str("uri", record.URI).Msg("failed to parse brew record")
 					continue
 				}
+
+				// Resolve bean reference
+				if beanRef, ok := record.Value["beanRef"].(string); ok && beanRef != "" {
+					if bean, found := beanMap[beanRef]; found {
+						brew.Bean = bean
+
+						// Resolve roaster reference for this bean
+						if roasterRef, found := beanRoasterRefMap[beanRef]; found {
+							if roaster, found := roasterMap[roasterRef]; found {
+								brew.Bean.Roaster = roaster
+							}
+						}
+					}
+				}
+
+				// Resolve brewer reference
+				if brewerRef, ok := record.Value["brewerRef"].(string); ok && brewerRef != "" {
+					if brewer, found := brewerMap[brewerRef]; found {
+						brew.BrewerObj = brewer
+					}
+				}
+
+				// Resolve grinder reference
+				if grinderRef, ok := record.Value["grinderRef"].(string); ok && grinderRef != "" {
+					if grinder, found := grinderMap[grinderRef]; found {
+						brew.GrinderObj = grinder
+					}
+				}
+
 				brews = append(brews, brew)
 			}
 			result.brews = brews

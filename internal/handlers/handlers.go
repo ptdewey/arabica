@@ -225,6 +225,7 @@ func (h *Handler) HandleBrewCreate(w http.ResponseWriter, r *http.Request) {
 
 	temperature, _ := strconv.ParseFloat(r.FormValue("temperature"), 64)
 	waterAmount, _ := strconv.Atoi(r.FormValue("water_amount"))
+	coffeeAmount, _ := strconv.Atoi(r.FormValue("coffee_amount"))
 	timeSeconds, _ := strconv.Atoi(r.FormValue("time_seconds"))
 	rating, _ := strconv.Atoi(r.FormValue("rating"))
 
@@ -259,6 +260,7 @@ func (h *Handler) HandleBrewCreate(w http.ResponseWriter, r *http.Request) {
 		Method:       r.FormValue("method"),
 		Temperature:  temperature,
 		WaterAmount:  waterAmount,
+		CoffeeAmount: coffeeAmount,
 		TimeSeconds:  timeSeconds,
 		GrindSize:    r.FormValue("grind_size"),
 		GrinderRKey:  r.FormValue("grinder_rkey"),
@@ -297,6 +299,7 @@ func (h *Handler) HandleBrewUpdate(w http.ResponseWriter, r *http.Request) {
 
 	temperature, _ := strconv.ParseFloat(r.FormValue("temperature"), 64)
 	waterAmount, _ := strconv.Atoi(r.FormValue("water_amount"))
+	coffeeAmount, _ := strconv.Atoi(r.FormValue("coffee_amount"))
 	timeSeconds, _ := strconv.Atoi(r.FormValue("time_seconds"))
 	rating, _ := strconv.Atoi(r.FormValue("rating"))
 
@@ -331,6 +334,7 @@ func (h *Handler) HandleBrewUpdate(w http.ResponseWriter, r *http.Request) {
 		Method:       r.FormValue("method"),
 		Temperature:  temperature,
 		WaterAmount:  waterAmount,
+		CoffeeAmount: coffeeAmount,
 		TimeSeconds:  timeSeconds,
 		GrindSize:    r.FormValue("grind_size"),
 		GrinderRKey:  r.FormValue("grinder_rkey"),

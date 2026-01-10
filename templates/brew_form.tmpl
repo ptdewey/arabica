@@ -49,6 +49,19 @@
                 {{template "new_bean_form" .}}
             </div>
             
+            <!-- Coffee Amount -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Coffee Amount (grams)</label>
+                <input 
+                    type="number" 
+                    name="coffee_amount" 
+                    step="0.1"
+                    {{if and .Brew (gt .Brew.CoffeeAmount 0)}}value="{{.Brew.CoffeeAmount}}"{{end}}
+                    placeholder="e.g. 18"
+                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4"/>
+                <p class="text-sm text-gray-500 mt-1">Amount of ground coffee used</p>
+            </div>
+            
             <!-- Grinder -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Grinder</label>

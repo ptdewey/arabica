@@ -25,45 +25,64 @@
 
         <!-- Brew info -->
         <div class="bg-gray-50 rounded-lg p-3">
-            <div class="flex items-center gap-2 mb-2">
-                <span class="text-lg">☕</span>
-                {{if .Brew.Method}}
-                <span class="font-medium text-gray-800">{{.Brew.Method}}</span>
-                {{else}}
-                <span class="font-medium text-gray-800">Brew</span>
-                {{end}}
+            <!-- Bean and roaster info -->
+            <div class="flex items-start justify-between gap-2 mb-2">
+                <div class="flex-1 min-w-0">
+                    {{if .Brew.Bean}}
+                    <!-- Bean name and roaster -->
+                    <div class="text-base">
+                        <span class="text-gray-600">Bean:</span>
+                        <span class="font-bold text-gray-900">
+                            {{if .Brew.Bean.Name}}{{.Brew.Bean.Name}}{{else}}{{.Brew.Bean.Origin}}{{end}}{{if and .Brew.Bean.Roaster .Brew.Bean.Roaster.Name}} - {{.Brew.Bean.Roaster.Name}}{{end}}
+                        </span>
+                    </div>
+                    <!-- Process, roast level, origin -->
+                    <div class="text-sm text-gray-600">
+                        {{if .Brew.Bean.Process}}{{.Brew.Bean.Process}}{{end}}{{if and .Brew.Bean.Process .Brew.Bean.RoastLevel}} • {{end}}{{if .Brew.Bean.RoastLevel}}{{.Brew.Bean.RoastLevel}}{{end}}{{if and (or .Brew.Bean.Process .Brew.Bean.RoastLevel) .Brew.Bean.Origin}} • {{end}}{{if .Brew.Bean.Origin}}{{.Brew.Bean.Origin}}{{end}}
+                    </div>
+                    {{end}}
+                </div>
                 {{if hasValue .Brew.Rating}}
-                <span class="ml-auto text-yellow-500">
-                    ★ {{.Brew.Rating}}/10
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 flex-shrink-0">
+                    ⭐ {{.Brew.Rating}}/10
                 </span>
                 {{end}}
             </div>
             
+            <!-- Brew parameters -->
             <div class="grid grid-cols-2 gap-2 text-sm text-gray-600">
-                {{if hasTemp .Brew.Temperature}}
+                {{if hasValue .Brew.CoffeeAmount}}
                 <div>
-                    <span class="text-gray-400">Temp:</span> {{formatTemp .Brew.Temperature}}
-                </div>
-                {{end}}
-                {{if hasValue .Brew.TimeSeconds}}
-                <div>
-                    <span class="text-gray-400">Time:</span> {{formatTime .Brew.TimeSeconds}}
+                    <span class="text-gray-500">Coffee:</span> {{.Brew.CoffeeAmount}}g
                 </div>
                 {{end}}
                 {{if hasValue .Brew.WaterAmount}}
                 <div>
-                    <span class="text-gray-400">Water:</span> {{.Brew.WaterAmount}}g
+                    <span class="text-gray-500">Water:</span> {{.Brew.WaterAmount}}g
+                </div>
+                {{end}}
+                {{if hasTemp .Brew.Temperature}}
+                <div>
+                    <span class="text-gray-500">Temp:</span> {{formatTemp .Brew.Temperature}}
+                </div>
+                {{end}}
+                {{if hasValue .Brew.TimeSeconds}}
+                <div>
+                    <span class="text-gray-500">Time:</span> {{formatTime .Brew.TimeSeconds}}
                 </div>
                 {{end}}
                 {{if .Brew.GrindSize}}
                 <div>
-                    <span class="text-gray-400">Grind:</span> {{.Brew.GrindSize}}
+                    <span class="text-gray-500">Grind:</span> {{.Brew.GrindSize}}{{if .Brew.GrinderObj}} ({{.Brew.GrinderObj.Name}}){{end}}
                 </div>
                 {{end}}
+                <div>
+                    <span class="text-gray-500">Brewer:</span> <span class="font-bold text-gray-900">{{if .Brew.BrewerObj}}{{.Brew.BrewerObj.Name}}{{else if .Brew.Method}}{{.Brew.Method}}{{else}}-{{end}}</span>
+                </div>
             </div>
 
             {{if .Brew.TastingNotes}}
-            <div class="mt-2 text-sm text-gray-700 italic">
+            <div class="mt-3 text-sm text-gray-700 italic border-t border-gray-200 pt-2">
                 "{{.Brew.TastingNotes}}"
             </div>
             {{end}}

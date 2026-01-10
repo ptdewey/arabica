@@ -15,6 +15,11 @@
             "format": "at-uri",
             "description": "AT-URI reference to the bean record used"
           },
+          "coffeeAmount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Amount of coffee used in grams"
+          },
           "method": {
             "type": "string",
             "maxLength": 100,
