@@ -6,7 +6,8 @@ import "arabica/internal/models"
 // This abstraction allows swapping SQLite for ATProto or other backends
 type Store interface {
 	// Brew operations
-	// Note: userID is deprecated for ATProto (user is implicit from DID)
+	// Note: userID parameter is deprecated for ATProto (user is implicit from DID)
+	// It remains for SQLite compatibility but should not be relied upon
 	CreateBrew(brew *models.CreateBrewRequest, userID int) (*models.Brew, error)
 	GetBrewByRKey(rkey string) (*models.Brew, error)
 	ListBrews(userID int) ([]*models.Brew, error)

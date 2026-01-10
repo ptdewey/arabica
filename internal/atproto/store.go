@@ -45,14 +45,14 @@ func (s *AtprotoStore) CreateBrew(brew *models.CreateBrewRequest, userID int) (*
 		return nil, fmt.Errorf("bean_rkey is required")
 	}
 
-	beanURI := fmt.Sprintf("at://%s/com.arabica.bean/%s", s.did.String(), brew.BeanRKey)
+	beanURI := BuildATURI(s.did.String(), NSIDBean, brew.BeanRKey)
 
 	var grinderURI, brewerURI string
 	if brew.GrinderRKey != "" {
-		grinderURI = fmt.Sprintf("at://%s/com.arabica.grinder/%s", s.did.String(), brew.GrinderRKey)
+		grinderURI = BuildATURI(s.did.String(), NSIDGrinder, brew.GrinderRKey)
 	}
 	if brew.BrewerRKey != "" {
-		brewerURI = fmt.Sprintf("at://%s/com.arabica.brewer/%s", s.did.String(), brew.BrewerRKey)
+		brewerURI = BuildATURI(s.did.String(), NSIDBrewer, brew.BrewerRKey)
 	}
 
 	// Convert to models.Brew for record conversion
@@ -89,7 +89,7 @@ func (s *AtprotoStore) CreateBrew(brew *models.CreateBrewRequest, userID int) (*
 
 	// Create record in PDS
 	output, err := s.client.CreateRecord(ctx, s.did, s.sessionID, &CreateRecordInput{
-		Collection: "com.arabica.brew",
+		Collection: NSIDBrew,
 		Record:     record,
 	})
 	if err != nil {
@@ -120,7 +120,7 @@ func (s *AtprotoStore) GetBrewByRKey(rkey string) (*models.Brew, error) {
 	ctx := s.getContext()
 
 	output, err := s.client.GetRecord(ctx, s.did, s.sessionID, &GetRecordInput{
-		Collection: "com.arabica.brew",
+		Collection: NSIDBrew,
 		RKey:       rkey,
 	})
 	if err != nil {
@@ -128,7 +128,7 @@ func (s *AtprotoStore) GetBrewByRKey(rkey string) (*models.Brew, error) {
 	}
 
 	// Build the AT-URI for this brew
-	atURI := fmt.Sprintf("at://%s/com.arabica.brew/%s", s.did.String(), rkey)
+	atURI := BuildATURI(s.did.String(), NSIDBrew, rkey)
 
 	// Convert to models.Brew
 	brew, err := RecordToBrew(output.Value, atURI)
@@ -146,18 +146,18 @@ func (s *AtprotoStore) GetBrewByRKey(rkey string) (*models.Brew, error) {
 
 	// Extract rkeys from AT-URIs for the model
 	if beanRef != "" {
-		if _, _, beanRKey, err := ResolveATURI(beanRef); err == nil {
-			brew.BeanRKey = beanRKey
+		if components, err := ResolveATURI(beanRef); err == nil {
+			brew.BeanRKey = components.RKey
 		}
 	}
 	if grinderRef != "" {
-		if _, _, grinderRKey, err := ResolveATURI(grinderRef); err == nil {
-			brew.GrinderRKey = grinderRKey
+		if components, err := ResolveATURI(grinderRef); err == nil {
+			brew.GrinderRKey = components.RKey
 		}
 	}
 	if brewerRef != "" {
-		if _, _, brewerRKey, err := ResolveATURI(brewerRef); err == nil {
-			brew.BrewerRKey = brewerRKey
+		if components, err := ResolveATURI(brewerRef); err == nil {
+			brew.BrewerRKey = components.RKey
 		}
 	}
 
@@ -173,7 +173,7 @@ func (s *AtprotoStore) ListBrews(userID int) ([]*models.Brew, error) {
 	ctx := s.getContext()
 
 	// Use ListAllRecords to handle pagination automatically
-	output, err := s.client.ListAllRecords(ctx, s.did, s.sessionID, "com.arabica.brew")
+	output, err := s.client.ListAllRecords(ctx, s.did, s.sessionID, NSIDBrew)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list brew records: %w", err)
 	}
@@ -188,8 +188,8 @@ func (s *AtprotoStore) ListBrews(userID int) ([]*models.Brew, error) {
 		}
 
 		// Extract rkey from URI
-		if _, _, rkey, err := ResolveATURI(rec.URI); err == nil {
-			brew.RKey = rkey
+		if components, err := ResolveATURI(rec.URI); err == nil {
+			brew.RKey = components.RKey
 		}
 
 		// Extract and resolve references
@@ -199,18 +199,18 @@ func (s *AtprotoStore) ListBrews(userID int) ([]*models.Brew, error) {
 
 		// Extract rkeys from AT-URIs for the model
 		if beanRef != "" {
-			if _, _, beanRKey, err := ResolveATURI(beanRef); err == nil {
-				brew.BeanRKey = beanRKey
+			if components, err := ResolveATURI(beanRef); err == nil {
+				brew.BeanRKey = components.RKey
 			}
 		}
 		if grinderRef != "" {
-			if _, _, grinderRKey, err := ResolveATURI(grinderRef); err == nil {
-				brew.GrinderRKey = grinderRKey
+			if components, err := ResolveATURI(grinderRef); err == nil {
+				brew.GrinderRKey = components.RKey
 			}
 		}
 		if brewerRef != "" {
-			if _, _, brewerRKey, err := ResolveATURI(brewerRef); err == nil {
-				brew.BrewerRKey = brewerRKey
+			if components, err := ResolveATURI(brewerRef); err == nil {
+				brew.BrewerRKey = components.RKey
 			}
 		}
 
@@ -233,14 +233,14 @@ func (s *AtprotoStore) UpdateBrewByRKey(rkey string, brew *models.CreateBrewRequ
 		return fmt.Errorf("bean_rkey is required")
 	}
 
-	beanURI := fmt.Sprintf("at://%s/com.arabica.bean/%s", s.did.String(), brew.BeanRKey)
+	beanURI := BuildATURI(s.did.String(), NSIDBean, brew.BeanRKey)
 
 	var grinderURI, brewerURI string
 	if brew.GrinderRKey != "" {
-		grinderURI = fmt.Sprintf("at://%s/com.arabica.grinder/%s", s.did.String(), brew.GrinderRKey)
+		grinderURI = BuildATURI(s.did.String(), NSIDGrinder, brew.GrinderRKey)
 	}
 	if brew.BrewerRKey != "" {
-		brewerURI = fmt.Sprintf("at://%s/com.arabica.brewer/%s", s.did.String(), brew.BrewerRKey)
+		brewerURI = BuildATURI(s.did.String(), NSIDBrewer, brew.BrewerRKey)
 	}
 
 	// Get the existing record to preserve createdAt
@@ -283,7 +283,7 @@ func (s *AtprotoStore) UpdateBrewByRKey(rkey string, brew *models.CreateBrewRequ
 
 	// Update record in PDS
 	err = s.client.PutRecord(ctx, s.did, s.sessionID, &PutRecordInput{
-		Collection: "com.arabica.brew",
+		Collection: NSIDBrew,
 		RKey:       rkey,
 		Record:     record,
 	})
@@ -298,7 +298,7 @@ func (s *AtprotoStore) DeleteBrewByRKey(rkey string) error {
 	ctx := s.getContext()
 
 	err := s.client.DeleteRecord(ctx, s.did, s.sessionID, &DeleteRecordInput{
-		Collection: "com.arabica.brew",
+		Collection: NSIDBrew,
 		RKey:       rkey,
 	})
 	if err != nil {
@@ -315,7 +315,7 @@ func (s *AtprotoStore) CreateBean(bean *models.CreateBeanRequest) (*models.Bean,
 
 	var roasterURI string
 	if bean.RoasterRKey != "" {
-		roasterURI = fmt.Sprintf("at://%s/com.arabica.roaster/%s", s.did.String(), bean.RoasterRKey)
+		roasterURI = BuildATURI(s.did.String(), NSIDRoaster, bean.RoasterRKey)
 	}
 
 	beanModel := &models.Bean{
@@ -334,7 +334,7 @@ func (s *AtprotoStore) CreateBean(bean *models.CreateBeanRequest) (*models.Bean,
 	}
 
 	output, err := s.client.CreateRecord(ctx, s.did, s.sessionID, &CreateRecordInput{
-		Collection: "com.arabica.bean",
+		Collection: NSIDBean,
 		Record:     record,
 	})
 	if err != nil {
@@ -357,14 +357,14 @@ func (s *AtprotoStore) GetBeanByRKey(rkey string) (*models.Bean, error) {
 	ctx := s.getContext()
 
 	output, err := s.client.GetRecord(ctx, s.did, s.sessionID, &GetRecordInput{
-		Collection: "com.arabica.bean",
+		Collection: NSIDBean,
 		RKey:       rkey,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get bean record: %w", err)
 	}
 
-	atURI := fmt.Sprintf("at://%s/com.arabica.bean/%s", s.did.String(), rkey)
+	atURI := BuildATURI(s.did.String(), NSIDBean, rkey)
 	bean, err := RecordToBean(output.Value, atURI)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert bean record: %w", err)
@@ -375,8 +375,8 @@ func (s *AtprotoStore) GetBeanByRKey(rkey string) (*models.Bean, error) {
 	// Resolve roaster reference if present
 	if roasterRef, ok := output.Value["roasterRef"].(string); ok && roasterRef != "" {
 		// Extract rkey from roaster ref
-		if _, _, roasterRKey, err := ResolveATURI(roasterRef); err == nil {
-			bean.RoasterRKey = roasterRKey
+		if components, err := ResolveATURI(roasterRef); err == nil {
+			bean.RoasterRKey = components.RKey
 		}
 		// Only try to resolve if it looks like a valid AT-URI
 		if len(roasterRef) > 10 && (roasterRef[:5] == "at://" || roasterRef[:4] == "did:") {
@@ -394,7 +394,7 @@ func (s *AtprotoStore) ListBeans() ([]*models.Bean, error) {
 	ctx := s.getContext()
 
 	// Use ListAllRecords to handle pagination automatically
-	output, err := s.client.ListAllRecords(ctx, s.did, s.sessionID, "com.arabica.bean")
+	output, err := s.client.ListAllRecords(ctx, s.did, s.sessionID, NSIDBean)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list bean records: %w", err)
 	}
@@ -409,15 +409,15 @@ func (s *AtprotoStore) ListBeans() ([]*models.Bean, error) {
 		}
 
 		// Extract rkey from URI
-		if _, _, rkey, err := ResolveATURI(rec.URI); err == nil {
-			bean.RKey = rkey
+		if components, err := ResolveATURI(rec.URI); err == nil {
+			bean.RKey = components.RKey
 		}
 
 		// Resolve roaster reference if present
 		if roasterRef, ok := rec.Value["roasterRef"].(string); ok && roasterRef != "" {
 			// Extract rkey from roaster ref
-			if _, _, roasterRKey, err := ResolveATURI(roasterRef); err == nil {
-				bean.RoasterRKey = roasterRKey
+			if components, err := ResolveATURI(roasterRef); err == nil {
+				bean.RoasterRKey = components.RKey
 			}
 			// Only try to resolve if it looks like a valid AT-URI
 			if len(roasterRef) > 10 && (roasterRef[:5] == "at://" || roasterRef[:4] == "did:") {
@@ -445,7 +445,7 @@ func (s *AtprotoStore) UpdateBeanByRKey(rkey string, bean *models.UpdateBeanRequ
 
 	var roasterURI string
 	if bean.RoasterRKey != "" {
-		roasterURI = fmt.Sprintf("at://%s/com.arabica.roaster/%s", s.did.String(), bean.RoasterRKey)
+		roasterURI = BuildATURI(s.did.String(), NSIDRoaster, bean.RoasterRKey)
 	}
 
 	beanModel := &models.Bean{
@@ -464,7 +464,7 @@ func (s *AtprotoStore) UpdateBeanByRKey(rkey string, bean *models.UpdateBeanRequ
 	}
 
 	err = s.client.PutRecord(ctx, s.did, s.sessionID, &PutRecordInput{
-		Collection: "com.arabica.bean",
+		Collection: NSIDBean,
 		RKey:       rkey,
 		Record:     record,
 	})
@@ -479,7 +479,7 @@ func (s *AtprotoStore) DeleteBeanByRKey(rkey string) error {
 	ctx := s.getContext()
 
 	err := s.client.DeleteRecord(ctx, s.did, s.sessionID, &DeleteRecordInput{
-		Collection: "com.arabica.bean",
+		Collection: NSIDBean,
 		RKey:       rkey,
 	})
 	if err != nil {
@@ -507,7 +507,7 @@ func (s *AtprotoStore) CreateRoaster(roaster *models.CreateRoasterRequest) (*mod
 	}
 
 	output, err := s.client.CreateRecord(ctx, s.did, s.sessionID, &CreateRecordInput{
-		Collection: "com.arabica.roaster",
+		Collection: NSIDRoaster,
 		Record:     record,
 	})
 	if err != nil {
@@ -530,14 +530,14 @@ func (s *AtprotoStore) GetRoasterByRKey(rkey string) (*models.Roaster, error) {
 	ctx := s.getContext()
 
 	output, err := s.client.GetRecord(ctx, s.did, s.sessionID, &GetRecordInput{
-		Collection: "com.arabica.roaster",
+		Collection: NSIDRoaster,
 		RKey:       rkey,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get roaster record: %w", err)
 	}
 
-	atURI := fmt.Sprintf("at://%s/com.arabica.roaster/%s", s.did.String(), rkey)
+	atURI := BuildATURI(s.did.String(), NSIDRoaster, rkey)
 	roaster, err := RecordToRoaster(output.Value, atURI)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert roaster record: %w", err)
@@ -552,7 +552,7 @@ func (s *AtprotoStore) ListRoasters() ([]*models.Roaster, error) {
 	ctx := s.getContext()
 
 	// Use ListAllRecords to handle pagination automatically
-	output, err := s.client.ListAllRecords(ctx, s.did, s.sessionID, "com.arabica.roaster")
+	output, err := s.client.ListAllRecords(ctx, s.did, s.sessionID, NSIDRoaster)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list roaster records: %w", err)
 	}
@@ -567,8 +567,8 @@ func (s *AtprotoStore) ListRoasters() ([]*models.Roaster, error) {
 		}
 
 		// Extract rkey from URI
-		if _, _, rkey, err := ResolveATURI(rec.URI); err == nil {
-			roaster.RKey = rkey
+		if components, err := ResolveATURI(rec.URI); err == nil {
+			roaster.RKey = components.RKey
 		}
 
 		roasters = append(roasters, roaster)
@@ -599,7 +599,7 @@ func (s *AtprotoStore) UpdateRoasterByRKey(rkey string, roaster *models.UpdateRo
 	}
 
 	err = s.client.PutRecord(ctx, s.did, s.sessionID, &PutRecordInput{
-		Collection: "com.arabica.roaster",
+		Collection: NSIDRoaster,
 		RKey:       rkey,
 		Record:     record,
 	})
@@ -614,7 +614,7 @@ func (s *AtprotoStore) DeleteRoasterByRKey(rkey string) error {
 	ctx := s.getContext()
 
 	err := s.client.DeleteRecord(ctx, s.did, s.sessionID, &DeleteRecordInput{
-		Collection: "com.arabica.roaster",
+		Collection: NSIDRoaster,
 		RKey:       rkey,
 	})
 	if err != nil {
@@ -643,7 +643,7 @@ func (s *AtprotoStore) CreateGrinder(grinder *models.CreateGrinderRequest) (*mod
 	}
 
 	output, err := s.client.CreateRecord(ctx, s.did, s.sessionID, &CreateRecordInput{
-		Collection: "com.arabica.grinder",
+		Collection: NSIDGrinder,
 		Record:     record,
 	})
 	if err != nil {
@@ -666,14 +666,14 @@ func (s *AtprotoStore) GetGrinderByRKey(rkey string) (*models.Grinder, error) {
 	ctx := s.getContext()
 
 	output, err := s.client.GetRecord(ctx, s.did, s.sessionID, &GetRecordInput{
-		Collection: "com.arabica.grinder",
+		Collection: NSIDGrinder,
 		RKey:       rkey,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get grinder record: %w", err)
 	}
 
-	atURI := fmt.Sprintf("at://%s/com.arabica.grinder/%s", s.did.String(), rkey)
+	atURI := BuildATURI(s.did.String(), NSIDGrinder, rkey)
 	grinder, err := RecordToGrinder(output.Value, atURI)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert grinder record: %w", err)
@@ -688,7 +688,7 @@ func (s *AtprotoStore) ListGrinders() ([]*models.Grinder, error) {
 	ctx := s.getContext()
 
 	// Use ListAllRecords to handle pagination automatically
-	output, err := s.client.ListAllRecords(ctx, s.did, s.sessionID, "com.arabica.grinder")
+	output, err := s.client.ListAllRecords(ctx, s.did, s.sessionID, NSIDGrinder)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list grinder records: %w", err)
 	}
@@ -703,8 +703,8 @@ func (s *AtprotoStore) ListGrinders() ([]*models.Grinder, error) {
 		}
 
 		// Extract rkey from URI
-		if _, _, rkey, err := ResolveATURI(rec.URI); err == nil {
-			grinder.RKey = rkey
+		if components, err := ResolveATURI(rec.URI); err == nil {
+			grinder.RKey = components.RKey
 		}
 
 		grinders = append(grinders, grinder)
@@ -736,7 +736,7 @@ func (s *AtprotoStore) UpdateGrinderByRKey(rkey string, grinder *models.UpdateGr
 	}
 
 	err = s.client.PutRecord(ctx, s.did, s.sessionID, &PutRecordInput{
-		Collection: "com.arabica.grinder",
+		Collection: NSIDGrinder,
 		RKey:       rkey,
 		Record:     record,
 	})
@@ -751,7 +751,7 @@ func (s *AtprotoStore) DeleteGrinderByRKey(rkey string) error {
 	ctx := s.getContext()
 
 	err := s.client.DeleteRecord(ctx, s.did, s.sessionID, &DeleteRecordInput{
-		Collection: "com.arabica.grinder",
+		Collection: NSIDGrinder,
 		RKey:       rkey,
 	})
 	if err != nil {
@@ -778,7 +778,7 @@ func (s *AtprotoStore) CreateBrewer(brewer *models.CreateBrewerRequest) (*models
 	}
 
 	output, err := s.client.CreateRecord(ctx, s.did, s.sessionID, &CreateRecordInput{
-		Collection: "com.arabica.brewer",
+		Collection: NSIDBrewer,
 		Record:     record,
 	})
 	if err != nil {
@@ -801,14 +801,14 @@ func (s *AtprotoStore) GetBrewerByRKey(rkey string) (*models.Brewer, error) {
 	ctx := s.getContext()
 
 	output, err := s.client.GetRecord(ctx, s.did, s.sessionID, &GetRecordInput{
-		Collection: "com.arabica.brewer",
+		Collection: NSIDBrewer,
 		RKey:       rkey,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get brewer record: %w", err)
 	}
 
-	atURI := fmt.Sprintf("at://%s/com.arabica.brewer/%s", s.did.String(), rkey)
+	atURI := BuildATURI(s.did.String(), NSIDBrewer, rkey)
 	brewer, err := RecordToBrewer(output.Value, atURI)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert brewer record: %w", err)
@@ -823,7 +823,7 @@ func (s *AtprotoStore) ListBrewers() ([]*models.Brewer, error) {
 	ctx := s.getContext()
 
 	// Use ListAllRecords to handle pagination automatically
-	output, err := s.client.ListAllRecords(ctx, s.did, s.sessionID, "com.arabica.brewer")
+	output, err := s.client.ListAllRecords(ctx, s.did, s.sessionID, NSIDBrewer)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list brewer records: %w", err)
 	}
@@ -838,8 +838,8 @@ func (s *AtprotoStore) ListBrewers() ([]*models.Brewer, error) {
 		}
 
 		// Extract rkey from URI
-		if _, _, rkey, err := ResolveATURI(rec.URI); err == nil {
-			brewer.RKey = rkey
+		if components, err := ResolveATURI(rec.URI); err == nil {
+			brewer.RKey = components.RKey
 		}
 
 		brewers = append(brewers, brewer)
@@ -869,7 +869,7 @@ func (s *AtprotoStore) UpdateBrewerByRKey(rkey string, brewer *models.UpdateBrew
 	}
 
 	err = s.client.PutRecord(ctx, s.did, s.sessionID, &PutRecordInput{
-		Collection: "com.arabica.brewer",
+		Collection: NSIDBrewer,
 		RKey:       rkey,
 		Record:     record,
 	})
@@ -884,7 +884,7 @@ func (s *AtprotoStore) DeleteBrewerByRKey(rkey string) error {
 	ctx := s.getContext()
 
 	err := s.client.DeleteRecord(ctx, s.did, s.sessionID, &DeleteRecordInput{
-		Collection: "com.arabica.brewer",
+		Collection: NSIDBrewer,
 		RKey:       rkey,
 	})
 	if err != nil {

@@ -48,6 +48,9 @@
                 });
                 if (response.ok) {
                     window.location.reload();
+                } else {
+                    const errorText = await response.text();
+                    alert('Failed to add bean: ' + errorText);
                 }
             },
             async addGrinder() {
@@ -62,6 +65,9 @@
                 });
                 if (response.ok) {
                     window.location.reload();
+                } else {
+                    const errorText = await response.text();
+                    alert('Failed to add grinder: ' + errorText);
                 }
             },
             async addBrewer() {
@@ -76,6 +82,9 @@
                 });
                 if (response.ok) {
                     window.location.reload();
+                } else {
+                    const errorText = await response.text();
+                    alert('Failed to add brewer: ' + errorText);
                 }
             }
         }

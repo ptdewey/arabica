@@ -19,7 +19,7 @@ func BrewToRecord(brew *models.Brew, beanURI, grinderURI, brewerURI string) (map
 	}
 
 	record := map[string]interface{}{
-		"$type":     "com.arabica.brew",
+		"$type":     NSIDBrew,
 		"beanRef":   beanURI,
 		"createdAt": brew.CreatedAt.Format(time.RFC3339),
 	}
@@ -74,15 +74,13 @@ func BrewToRecord(brew *models.Brew, beanURI, grinderURI, brewerURI string) (map
 func RecordToBrew(record map[string]interface{}, atURI string) (*models.Brew, error) {
 	brew := &models.Brew{}
 
-	// Extract rkey from AT-URI to use as ID
+	// Extract rkey from AT-URI
 	if atURI != "" {
-		_, err := syntax.ParseATURI(atURI)
+		parsedURI, err := syntax.ParseATURI(atURI)
 		if err != nil {
 			return nil, fmt.Errorf("invalid AT-URI: %w", err)
 		}
-		brew.ID = 0 // We'll use the rkey string instead of numeric ID
-		// Store the full URI for reference resolution
-		// (In a real implementation, you might add a URIString field to models.Brew)
+		brew.RKey = parsedURI.RecordKey().String()
 	}
 
 	// Required field: beanRef
@@ -156,7 +154,7 @@ func RecordToBrew(record map[string]interface{}, atURI string) (*models.Brew, er
 // BeanToRecord converts a models.Bean to an atproto record map
 func BeanToRecord(bean *models.Bean, roasterURI string) (map[string]interface{}, error) {
 	record := map[string]interface{}{
-		"$type":     "com.arabica.bean",
+		"$type":     NSIDBean,
 		"name":      bean.Name,
 		"createdAt": bean.CreatedAt.Format(time.RFC3339),
 	}
@@ -187,11 +185,11 @@ func RecordToBean(record map[string]interface{}, atURI string) (*models.Bean, er
 
 	// Extract rkey from AT-URI
 	if atURI != "" {
-		_, err := syntax.ParseATURI(atURI)
+		parsedURI, err := syntax.ParseATURI(atURI)
 		if err != nil {
 			return nil, fmt.Errorf("invalid AT-URI: %w", err)
 		}
-		bean.ID = 0 // Use rkey instead of numeric ID
+		bean.RKey = parsedURI.RecordKey().String()
 	}
 
 	// Required field: name
@@ -234,7 +232,7 @@ func RecordToBean(record map[string]interface{}, atURI string) (*models.Bean, er
 // RoasterToRecord converts a models.Roaster to an atproto record map
 func RoasterToRecord(roaster *models.Roaster) (map[string]interface{}, error) {
 	record := map[string]interface{}{
-		"$type":     "com.arabica.roaster",
+		"$type":     NSIDRoaster,
 		"name":      roaster.Name,
 		"createdAt": roaster.CreatedAt.Format(time.RFC3339),
 	}
@@ -256,11 +254,11 @@ func RecordToRoaster(record map[string]interface{}, atURI string) (*models.Roast
 
 	// Extract rkey from AT-URI
 	if atURI != "" {
-		_, err := syntax.ParseATURI(atURI)
+		parsedURI, err := syntax.ParseATURI(atURI)
 		if err != nil {
 			return nil, fmt.Errorf("invalid AT-URI: %w", err)
 		}
-		roaster.ID = 0
+		roaster.RKey = parsedURI.RecordKey().String()
 	}
 
 	// Required field: name
@@ -297,7 +295,7 @@ func RecordToRoaster(record map[string]interface{}, atURI string) (*models.Roast
 // GrinderToRecord converts a models.Grinder to an atproto record map
 func GrinderToRecord(grinder *models.Grinder) (map[string]interface{}, error) {
 	record := map[string]interface{}{
-		"$type":     "com.arabica.grinder",
+		"$type":     NSIDGrinder,
 		"name":      grinder.Name,
 		"createdAt": grinder.CreatedAt.Format(time.RFC3339),
 	}
@@ -322,11 +320,11 @@ func RecordToGrinder(record map[string]interface{}, atURI string) (*models.Grind
 
 	// Extract rkey from AT-URI
 	if atURI != "" {
-		_, err := syntax.ParseATURI(atURI)
+		parsedURI, err := syntax.ParseATURI(atURI)
 		if err != nil {
 			return nil, fmt.Errorf("invalid AT-URI: %w", err)
 		}
-		grinder.ID = 0
+		grinder.RKey = parsedURI.RecordKey().String()
 	}
 
 	// Required field: name
@@ -366,7 +364,7 @@ func RecordToGrinder(record map[string]interface{}, atURI string) (*models.Grind
 // BrewerToRecord converts a models.Brewer to an atproto record map
 func BrewerToRecord(brewer *models.Brewer) (map[string]interface{}, error) {
 	record := map[string]interface{}{
-		"$type":     "com.arabica.brewer",
+		"$type":     NSIDBrewer,
 		"name":      brewer.Name,
 		"createdAt": brewer.CreatedAt.Format(time.RFC3339),
 	}
@@ -385,11 +383,11 @@ func RecordToBrewer(record map[string]interface{}, atURI string) (*models.Brewer
 
 	// Extract rkey from AT-URI
 	if atURI != "" {
-		_, err := syntax.ParseATURI(atURI)
+		parsedURI, err := syntax.ParseATURI(atURI)
 		if err != nil {
 			return nil, fmt.Errorf("invalid AT-URI: %w", err)
 		}
-		brewer.ID = 0
+		brewer.RKey = parsedURI.RecordKey().String()
 	}
 
 	// Required field: name

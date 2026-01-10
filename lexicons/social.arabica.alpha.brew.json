@@ -1,6 +1,6 @@
 {
   "lexicon": 1,
-  "id": "com.arabica.brew",
+  "id": "social.arabica.alpha.brew",
   "defs": {
     "main": {
       "type": "record",

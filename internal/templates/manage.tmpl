@@ -46,7 +46,8 @@
                 if (response.ok) {
                     window.location.reload();
                 } else {
-                    alert('Failed to save bean');
+                    const errorText = await response.text();
+                    alert('Failed to save bean: ' + errorText);
                 }
             },
 
@@ -57,7 +58,8 @@
                 if (response.ok) {
                     window.location.reload();
                 } else {
-                    alert('Failed to delete bean');
+                    const errorText = await response.text();
+                    alert('Failed to delete bean: ' + errorText);
                 }
             },
 
@@ -85,7 +87,8 @@
                 if (response.ok) {
                     window.location.reload();
                 } else {
-                    alert('Failed to save roaster');
+                    const errorText = await response.text();
+                    alert('Failed to save roaster: ' + errorText);
                 }
             },
 
@@ -96,7 +99,8 @@
                 if (response.ok) {
                     window.location.reload();
                 } else {
-                    alert('Failed to delete roaster');
+                    const errorText = await response.text();
+                    alert('Failed to delete roaster: ' + errorText);
                 }
             },
 
@@ -124,7 +128,8 @@
                 if (response.ok) {
                     window.location.reload();
                 } else {
-                    alert('Failed to save grinder');
+                    const errorText = await response.text();
+                    alert('Failed to save grinder: ' + errorText);
                 }
             },
 
@@ -135,7 +140,8 @@
                 if (response.ok) {
                     window.location.reload();
                 } else {
-                    alert('Failed to delete grinder');
+                    const errorText = await response.text();
+                    alert('Failed to delete grinder: ' + errorText);
                 }
             },
 
@@ -163,7 +169,8 @@
                 if (response.ok) {
                     window.location.reload();
                 } else {
-                    alert('Failed to save brewer');
+                    const errorText = await response.text();
+                    alert('Failed to save brewer: ' + errorText);
                 }
             },
 
@@ -174,7 +181,8 @@
                 if (response.ok) {
                     window.location.reload();
                 } else {
-                    alert('Failed to delete brewer');
+                    const errorText = await response.text();
+                    alert('Failed to delete brewer: ' + errorText);
                 }
             }
         }
@@ -480,7 +488,7 @@
                     <option value="">Select Grinder Type *</option>
                     <option value="Hand">Hand</option>
                     <option value="Electric">Electric</option>
-                    <option value="Electric Hand">Electric Hand</option>
+                    <option value="Portable Electric">Portable Electric</option>
                 </select>
                 <select x-model="grinderForm.burr_type" class="w-full rounded-md border-gray-300 bg-white shadow-sm py-2 px-3">
                     <option value="">Select Burr Type (Optional)</option>

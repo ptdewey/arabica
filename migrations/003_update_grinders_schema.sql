@@ -8,7 +8,7 @@
 CREATE TABLE grinders_new (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
-    grinder_type TEXT NOT NULL CHECK(grinder_type IN ('Hand', 'Electric', 'Electric Hand')),
+    grinder_type TEXT NOT NULL CHECK(grinder_type IN ('Hand', 'Electric', 'Portable Electric')),
     burr_type TEXT CHECK(burr_type IN ('Conical', 'Flat', '')),
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

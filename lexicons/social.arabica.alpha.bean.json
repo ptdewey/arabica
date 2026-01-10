@@ -1,6 +1,6 @@
 {
   "lexicon": 1,
-  "id": "com.arabica.bean",
+  "id": "social.arabica.alpha.bean",
   "defs": {
     "main": {
       "type": "record",
@@ -38,7 +38,7 @@
           "roasterRef": {
             "type": "string",
             "format": "at-uri",
-            "description": "AT-URI reference to the roaster record (e.g., at://did:plc:abc/com.arabica.roaster/3jxy...)"
+            "description": "AT-URI reference to the roaster record (e.g., at://did:plc:abc/social.arabica.alpha.roaster/3jxy...)"
           },
           "createdAt": {
             "type": "string",

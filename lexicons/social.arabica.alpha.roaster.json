@@ -1,6 +1,6 @@
 {
   "lexicon": 1,
-  "id": "com.arabica.roaster",
+  "id": "social.arabica.alpha.roaster",
   "defs": {
     "main": {
       "type": "record",

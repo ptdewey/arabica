@@ -13,11 +13,11 @@ import (
 
 var scopes = []string{
 	"atproto",
-	"repo:com.arabica.bean",
-	"repo:com.arabica.brew",
-	"repo:com.arabica.brewer",
-	"repo:com.arabica.grinder",
-	"repo:com.arabica.roaster",
+	"repo:" + NSIDBean,
+	"repo:" + NSIDBrew,
+	"repo:" + NSIDBrewer,
+	"repo:" + NSIDGrinder,
+	"repo:" + NSIDRoaster,
 }
 
 // OAuthManager wraps indigo's OAuth client for managing user authentication

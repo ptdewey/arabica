@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"strconv"
 
 	"arabica/internal/models"
 
@@ -101,15 +102,54 @@ func (s *SQLiteStore) Close() error {
 	return s.db.Close()
 }
 
-// Brew operations
+// Helper functions for RKey <-> ID conversion
+func rkeyToID(rkey string) (int, error) {
+	id, err := strconv.Atoi(rkey)
+	if err != nil {
+		return 0, fmt.Errorf("invalid rkey: %w", err)
+	}
+	return id, nil
+}
+
+func idToRKey(id int) string {
+	return strconv.Itoa(id)
+}
+
+func optionalIDToRKey(id *int) string {
+	if id == nil || *id == 0 {
+		return ""
+	}
+	return strconv.Itoa(*id)
+}
+
+func rkeyToOptionalID(rkey string) *int {
+	if rkey == "" {
+		return nil
+	}
+	id, err := strconv.Atoi(rkey)
+	if err != nil {
+		return nil
+	}
+	return &id
+}
+
+// ========== Brew Operations ==========
 
 func (s *SQLiteStore) CreateBrew(req *models.CreateBrewRequest, userID int) (*models.Brew, error) {
+	beanID, err := rkeyToID(req.BeanRKey)
+	if err != nil {
+		return nil, fmt.Errorf("invalid bean_rkey: %w", err)
+	}
+
+	grinderID := rkeyToOptionalID(req.GrinderRKey)
+	brewerID := rkeyToOptionalID(req.BrewerRKey)
+
 	result, err := s.db.Exec(`
 		INSERT INTO brews (user_id, bean_id, method, temperature, water_amount, time_seconds, 
 			grind_size, grinder, grinder_id, brewer_id, tasting_notes, rating)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-	`, userID, req.BeanID, req.Method, req.Temperature, req.WaterAmount, req.TimeSeconds,
-		req.GrindSize, req.Grinder, req.GrinderID, req.BrewerID, req.TastingNotes, req.Rating)
+	`, userID, beanID, req.Method, req.Temperature, req.WaterAmount, req.TimeSeconds,
+		req.GrindSize, "", grinderID, brewerID, req.TastingNotes, req.Rating)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to create brew: %w", err)
@@ -120,17 +160,20 @@ func (s *SQLiteStore) CreateBrew(req *models.CreateBrewRequest, userID int) (*mo
 		return nil, fmt.Errorf("failed to get last insert id: %w", err)
 	}
 
+	// Create pours if provided
+	if len(req.Pours) > 0 {
+		if err := s.CreatePours(int(id), req.Pours); err != nil {
+			return nil, fmt.Errorf("failed to create pours: %w", err)
+		}
+	}
+
 	return s.getBrew(int(id))
 }
 
-// GetBrewByRKey retrieves a brew by its rkey (for SQLite, this is the string ID)
 func (s *SQLiteStore) GetBrewByRKey(rkey string) (*models.Brew, error) {
-	// For SQLite, rkey is just the string representation of the ID
-	// Parse it back to int for the query
-	var id int
-	_, err := fmt.Sscanf(rkey, "%d", &id)
+	id, err := rkeyToID(rkey)
 	if err != nil {
-		return nil, fmt.Errorf("invalid rkey: %w", err)
+		return nil, err
 	}
 	return s.getBrew(id)
 }
@@ -144,10 +187,15 @@ func (s *SQLiteStore) getBrew(id int) (*models.Brew, error) {
 		BrewerObj:  &models.Brewer{},
 	}
 
+	var brewID, beanID int
+	var grinderID, brewerID sql.NullInt64
+	var beanRoasterID sql.NullInt64
+	var grinderObjID, brewerObjID, roasterObjID int
+
 	err := s.db.QueryRow(`
 		SELECT 
-			b.id, b.user_id, b.bean_id, b.method, b.temperature, b.water_amount,
-			b.time_seconds, b.grind_size, b.grinder, b.grinder_id, b.brewer_id, b.tasting_notes, b.rating, b.created_at,
+			b.id, b.bean_id, b.method, b.temperature, b.water_amount,
+			b.time_seconds, b.grind_size, b.grinder_id, b.brewer_id, b.tasting_notes, b.rating, b.created_at,
 			bn.id, bn.name, bn.origin, bn.roast_level, bn.process, bn.description, bn.roaster_id,
 			COALESCE(r.id, 0), COALESCE(r.name, ''), COALESCE(r.location, ''), COALESCE(r.website, ''),
 			COALESCE(g.id, 0), COALESCE(g.name, ''), COALESCE(g.grinder_type, ''), COALESCE(g.burr_type, ''), COALESCE(g.notes, ''),
@@ -159,16 +207,34 @@ func (s *SQLiteStore) getBrew(id int) (*models.Brew, error) {
 		LEFT JOIN brewers br ON b.brewer_id = br.id
 		WHERE b.id = ?
 	`, id).Scan(
-		&brew.ID, &brew.UserID, &brew.BeanID, &brew.Method, &brew.Temperature, &brew.WaterAmount,
-		&brew.TimeSeconds, &brew.GrindSize, &brew.Grinder, &brew.GrinderID, &brew.BrewerID, &brew.TastingNotes, &brew.Rating, &brew.CreatedAt,
-		&brew.Bean.ID, &brew.Bean.Name, &brew.Bean.Origin, &brew.Bean.RoastLevel, &brew.Bean.Process, &brew.Bean.Description, &brew.Bean.RoasterID,
-		&brew.Bean.Roaster.ID, &brew.Bean.Roaster.Name, &brew.Bean.Roaster.Location, &brew.Bean.Roaster.Website,
-		&brew.GrinderObj.ID, &brew.GrinderObj.Name, &brew.GrinderObj.GrinderType, &brew.GrinderObj.BurrType, &brew.GrinderObj.Notes,
-		&brew.BrewerObj.ID, &brew.BrewerObj.Name, &brew.BrewerObj.Description,
+		&brewID, &beanID, &brew.Method, &brew.Temperature, &brew.WaterAmount,
+		&brew.TimeSeconds, &brew.GrindSize, &grinderID, &brewerID, &brew.TastingNotes, &brew.Rating, &brew.CreatedAt,
+		&beanID, &brew.Bean.Name, &brew.Bean.Origin, &brew.Bean.RoastLevel, &brew.Bean.Process, &brew.Bean.Description, &beanRoasterID,
+		&roasterObjID, &brew.Bean.Roaster.Name, &brew.Bean.Roaster.Location, &brew.Bean.Roaster.Website,
+		&grinderObjID, &brew.GrinderObj.Name, &brew.GrinderObj.GrinderType, &brew.GrinderObj.BurrType, &brew.GrinderObj.Notes,
+		&brewerObjID, &brew.BrewerObj.Name, &brew.BrewerObj.Description,
 	)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get brew: %w", err)
+	}
+
+	// Convert IDs to RKeys
+	brew.RKey = idToRKey(brewID)
+	brew.BeanRKey = idToRKey(beanID)
+	brew.Bean.RKey = idToRKey(beanID)
+
+	if grinderID.Valid && grinderID.Int64 > 0 {
+		brew.GrinderRKey = idToRKey(int(grinderID.Int64))
+		brew.GrinderObj.RKey = brew.GrinderRKey
+	}
+	if brewerID.Valid && brewerID.Int64 > 0 {
+		brew.BrewerRKey = idToRKey(int(brewerID.Int64))
+		brew.BrewerObj.RKey = brew.BrewerRKey
+	}
+	if beanRoasterID.Valid && beanRoasterID.Int64 > 0 {
+		brew.Bean.RoasterRKey = idToRKey(int(beanRoasterID.Int64))
+		brew.Bean.Roaster.RKey = brew.Bean.RoasterRKey
 	}
 
 	// Load pours for this brew
@@ -184,8 +250,8 @@ func (s *SQLiteStore) getBrew(id int) (*models.Brew, error) {
 func (s *SQLiteStore) ListBrews(userID int) ([]*models.Brew, error) {
 	rows, err := s.db.Query(`
 		SELECT 
-			b.id, b.user_id, b.bean_id, b.method, b.temperature, b.water_amount,
-			b.time_seconds, b.grind_size, b.grinder, b.grinder_id, b.brewer_id, b.tasting_notes, b.rating, b.created_at,
+			b.id, b.bean_id, b.method, b.temperature, b.water_amount,
+			b.time_seconds, b.grind_size, b.grinder_id, b.brewer_id, b.tasting_notes, b.rating, b.created_at,
 			bn.id, bn.name, bn.origin, bn.roast_level, bn.process, bn.description, bn.roaster_id,
 			COALESCE(r.id, 0), COALESCE(r.name, ''), COALESCE(r.location, ''), COALESCE(r.website, ''),
 			COALESCE(g.id, 0), COALESCE(g.name, ''), COALESCE(g.grinder_type, ''), COALESCE(g.burr_type, ''), COALESCE(g.notes, ''),
@@ -214,21 +280,44 @@ func (s *SQLiteStore) ListBrews(userID int) ([]*models.Brew, error) {
 			BrewerObj:  &models.Brewer{},
 		}
 
+		var brewID, beanID int
+		var grinderID, brewerID sql.NullInt64
+		var beanRoasterID sql.NullInt64
+		var grinderObjID, brewerObjID, roasterObjID int
+
 		err := rows.Scan(
-			&brew.ID, &brew.UserID, &brew.BeanID, &brew.Method, &brew.Temperature, &brew.WaterAmount,
-			&brew.TimeSeconds, &brew.GrindSize, &brew.Grinder, &brew.GrinderID, &brew.BrewerID, &brew.TastingNotes, &brew.Rating, &brew.CreatedAt,
-			&brew.Bean.ID, &brew.Bean.Name, &brew.Bean.Origin, &brew.Bean.RoastLevel, &brew.Bean.Process, &brew.Bean.Description, &brew.Bean.RoasterID,
-			&brew.Bean.Roaster.ID, &brew.Bean.Roaster.Name, &brew.Bean.Roaster.Location, &brew.Bean.Roaster.Website,
-			&brew.GrinderObj.ID, &brew.GrinderObj.Name, &brew.GrinderObj.GrinderType, &brew.GrinderObj.BurrType, &brew.GrinderObj.Notes,
-			&brew.BrewerObj.ID, &brew.BrewerObj.Name, &brew.BrewerObj.Description,
+			&brewID, &beanID, &brew.Method, &brew.Temperature, &brew.WaterAmount,
+			&brew.TimeSeconds, &brew.GrindSize, &grinderID, &brewerID, &brew.TastingNotes, &brew.Rating, &brew.CreatedAt,
+			&beanID, &brew.Bean.Name, &brew.Bean.Origin, &brew.Bean.RoastLevel, &brew.Bean.Process, &brew.Bean.Description, &beanRoasterID,
+			&roasterObjID, &brew.Bean.Roaster.Name, &brew.Bean.Roaster.Location, &brew.Bean.Roaster.Website,
+			&grinderObjID, &brew.GrinderObj.Name, &brew.GrinderObj.GrinderType, &brew.GrinderObj.BurrType, &brew.GrinderObj.Notes,
+			&brewerObjID, &brew.BrewerObj.Name, &brew.BrewerObj.Description,
 		)
 
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan brew: %w", err)
 		}
 
+		// Convert IDs to RKeys
+		brew.RKey = idToRKey(brewID)
+		brew.BeanRKey = idToRKey(beanID)
+		brew.Bean.RKey = idToRKey(beanID)
+
+		if grinderID.Valid && grinderID.Int64 > 0 {
+			brew.GrinderRKey = idToRKey(int(grinderID.Int64))
+			brew.GrinderObj.RKey = brew.GrinderRKey
+		}
+		if brewerID.Valid && brewerID.Int64 > 0 {
+			brew.BrewerRKey = idToRKey(int(brewerID.Int64))
+			brew.BrewerObj.RKey = brew.BrewerRKey
+		}
+		if beanRoasterID.Valid && beanRoasterID.Int64 > 0 {
+			brew.Bean.RoasterRKey = idToRKey(int(beanRoasterID.Int64))
+			brew.Bean.Roaster.RKey = brew.Bean.RoasterRKey
+		}
+
 		// Load pours for this brew
-		pours, err := s.ListPours(brew.ID)
+		pours, err := s.ListPours(brewID)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get pours: %w", err)
 		}
@@ -240,57 +329,72 @@ func (s *SQLiteStore) ListBrews(userID int) ([]*models.Brew, error) {
 	return brews, nil
 }
 
-func (s *SQLiteStore) UpdateBrew(id int, req *models.CreateBrewRequest) error {
-	_, err := s.db.Exec(`
+func (s *SQLiteStore) UpdateBrewByRKey(rkey string, req *models.CreateBrewRequest) error {
+	id, err := rkeyToID(rkey)
+	if err != nil {
+		return err
+	}
+
+	beanID, err := rkeyToID(req.BeanRKey)
+	if err != nil {
+		return fmt.Errorf("invalid bean_rkey: %w", err)
+	}
+
+	grinderID := rkeyToOptionalID(req.GrinderRKey)
+	brewerID := rkeyToOptionalID(req.BrewerRKey)
+
+	_, err = s.db.Exec(`
 		UPDATE brews 
 		SET bean_id = ?, method = ?, temperature = ?, water_amount = ?, time_seconds = ?,
-			grind_size = ?, grinder = ?, grinder_id = ?, brewer_id = ?, tasting_notes = ?, rating = ?
+			grind_size = ?, grinder_id = ?, brewer_id = ?, tasting_notes = ?, rating = ?
 		WHERE id = ?
-	`, req.BeanID, req.Method, req.Temperature, req.WaterAmount, req.TimeSeconds,
-		req.GrindSize, req.Grinder, req.GrinderID, req.BrewerID, req.TastingNotes, req.Rating, id)
+	`, beanID, req.Method, req.Temperature, req.WaterAmount, req.TimeSeconds,
+		req.GrindSize, grinderID, brewerID, req.TastingNotes, req.Rating, id)
 
 	if err != nil {
 		return fmt.Errorf("failed to update brew: %w", err)
 	}
 
+	// Update pours: delete existing and recreate
+	if err := s.DeletePoursForBrew(id); err != nil {
+		return fmt.Errorf("failed to delete existing pours: %w", err)
+	}
+	if len(req.Pours) > 0 {
+		if err := s.CreatePours(id, req.Pours); err != nil {
+			return fmt.Errorf("failed to create pours: %w", err)
+		}
+	}
+
 	return nil
 }
 
-// UpdateBrewByRKey updates a brew by its rkey (for SQLite, rkey is the string ID)
-func (s *SQLiteStore) UpdateBrewByRKey(rkey string, req *models.CreateBrewRequest) error {
-	var id int
-	_, err := fmt.Sscanf(rkey, "%d", &id)
+func (s *SQLiteStore) DeleteBrewByRKey(rkey string) error {
+	id, err := rkeyToID(rkey)
 	if err != nil {
-		return fmt.Errorf("invalid rkey: %w", err)
+		return err
 	}
-	return s.UpdateBrew(id, req)
-}
 
-func (s *SQLiteStore) DeleteBrew(id int) error {
-	_, err := s.db.Exec("DELETE FROM brews WHERE id = ?", id)
+	// Delete pours first (foreign key)
+	if err := s.DeletePoursForBrew(id); err != nil {
+		return fmt.Errorf("failed to delete pours: %w", err)
+	}
+
+	_, err = s.db.Exec("DELETE FROM brews WHERE id = ?", id)
 	if err != nil {
 		return fmt.Errorf("failed to delete brew: %w", err)
 	}
 	return nil
 }
 
-// DeleteBrewByRKey deletes a brew by its rkey (for SQLite, rkey is the string ID)
-func (s *SQLiteStore) DeleteBrewByRKey(rkey string) error {
-	var id int
-	_, err := fmt.Sscanf(rkey, "%d", &id)
-	if err != nil {
-		return fmt.Errorf("invalid rkey: %w", err)
-	}
-	return s.DeleteBrew(id)
-}
-
-// Bean operations
+// ========== Bean Operations ==========
 
 func (s *SQLiteStore) CreateBean(req *models.CreateBeanRequest) (*models.Bean, error) {
+	roasterID := rkeyToOptionalID(req.RoasterRKey)
+
 	result, err := s.db.Exec(`
 		INSERT INTO beans (name, origin, roast_level, process, description, roaster_id)
 		VALUES (?, ?, ?, ?, ?, ?)
-	`, req.Name, req.Origin, req.RoastLevel, req.Process, req.Description, req.RoasterID)
+	`, req.Name, req.Origin, req.RoastLevel, req.Process, req.Description, roasterID)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to create bean: %w", err)
@@ -301,43 +405,52 @@ func (s *SQLiteStore) CreateBean(req *models.CreateBeanRequest) (*models.Bean, e
 		return nil, fmt.Errorf("failed to get last insert id: %w", err)
 	}
 
-	return s.GetBean(int(id))
+	return s.getBean(int(id))
 }
 
-func (s *SQLiteStore) GetBean(id int) (*models.Bean, error) {
+func (s *SQLiteStore) GetBeanByRKey(rkey string) (*models.Bean, error) {
+	id, err := rkeyToID(rkey)
+	if err != nil {
+		return nil, err
+	}
+	return s.getBean(id)
+}
+
+func (s *SQLiteStore) getBean(id int) (*models.Bean, error) {
 	bean := &models.Bean{
 		Roaster: &models.Roaster{},
 	}
+
+	var beanID int
+	var roasterID sql.NullInt64
+	var roasterObjID int
+
 	err := s.db.QueryRow(`
 		SELECT b.id, b.name, b.origin, b.roast_level, b.process, b.description, b.roaster_id, b.created_at,
-			COALESCE(r.id, 0), COALESCE(r.name, '')
+			COALESCE(r.id, 0), COALESCE(r.name, ''), COALESCE(r.location, ''), COALESCE(r.website, '')
 		FROM beans b
 		LEFT JOIN roasters r ON b.roaster_id = r.id
 		WHERE b.id = ?
-	`, id).Scan(&bean.ID, &bean.Name, &bean.Origin, &bean.RoastLevel, &bean.Process, &bean.Description, &bean.RoasterID, &bean.CreatedAt,
-		&bean.Roaster.ID, &bean.Roaster.Name)
+	`, id).Scan(&beanID, &bean.Name, &bean.Origin, &bean.RoastLevel, &bean.Process, &bean.Description, &roasterID, &bean.CreatedAt,
+		&roasterObjID, &bean.Roaster.Name, &bean.Roaster.Location, &bean.Roaster.Website)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get bean: %w", err)
 	}
 
-	return bean, nil
-}
-
-// GetBeanByRKey retrieves a bean by its rkey (for SQLite, rkey is the string ID)
-func (s *SQLiteStore) GetBeanByRKey(rkey string) (*models.Bean, error) {
-	var id int
-	_, err := fmt.Sscanf(rkey, "%d", &id)
-	if err != nil {
-		return nil, fmt.Errorf("invalid rkey: %w", err)
+	bean.RKey = idToRKey(beanID)
+	if roasterID.Valid && roasterID.Int64 > 0 {
+		bean.RoasterRKey = idToRKey(int(roasterID.Int64))
+		bean.Roaster.RKey = bean.RoasterRKey
 	}
-	return s.GetBean(id)
+
+	return bean, nil
 }
 
 func (s *SQLiteStore) ListBeans() ([]*models.Bean, error) {
 	rows, err := s.db.Query(`
 		SELECT b.id, b.name, b.origin, b.roast_level, b.process, b.description, b.roaster_id, b.created_at,
-			COALESCE(r.id, 0), COALESCE(r.name, '')
+			COALESCE(r.id, 0), COALESCE(r.name, ''), COALESCE(r.location, ''), COALESCE(r.website, '')
 		FROM beans b
 		LEFT JOIN roasters r ON b.roaster_id = r.id
 		ORDER BY b.created_at DESC
@@ -353,18 +466,64 @@ func (s *SQLiteStore) ListBeans() ([]*models.Bean, error) {
 		bean := &models.Bean{
 			Roaster: &models.Roaster{},
 		}
-		err := rows.Scan(&bean.ID, &bean.Name, &bean.Origin, &bean.RoastLevel, &bean.Process, &bean.Description, &bean.RoasterID, &bean.CreatedAt,
-			&bean.Roaster.ID, &bean.Roaster.Name)
+
+		var beanID int
+		var roasterID sql.NullInt64
+		var roasterObjID int
+
+		err := rows.Scan(&beanID, &bean.Name, &bean.Origin, &bean.RoastLevel, &bean.Process, &bean.Description, &roasterID, &bean.CreatedAt,
+			&roasterObjID, &bean.Roaster.Name, &bean.Roaster.Location, &bean.Roaster.Website)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan bean: %w", err)
 		}
+
+		bean.RKey = idToRKey(beanID)
+		if roasterID.Valid && roasterID.Int64 > 0 {
+			bean.RoasterRKey = idToRKey(int(roasterID.Int64))
+			bean.Roaster.RKey = bean.RoasterRKey
+		}
+
 		beans = append(beans, bean)
 	}
 
 	return beans, nil
 }
 
-// Roaster operations
+func (s *SQLiteStore) UpdateBeanByRKey(rkey string, req *models.UpdateBeanRequest) error {
+	id, err := rkeyToID(rkey)
+	if err != nil {
+		return err
+	}
+
+	roasterID := rkeyToOptionalID(req.RoasterRKey)
+
+	_, err = s.db.Exec(`
+		UPDATE beans 
+		SET name = ?, origin = ?, roast_level = ?, process = ?, description = ?, roaster_id = ?
+		WHERE id = ?
+	`, req.Name, req.Origin, req.RoastLevel, req.Process, req.Description, roasterID, id)
+
+	if err != nil {
+		return fmt.Errorf("failed to update bean: %w", err)
+	}
+
+	return nil
+}
+
+func (s *SQLiteStore) DeleteBeanByRKey(rkey string) error {
+	id, err := rkeyToID(rkey)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.db.Exec("DELETE FROM beans WHERE id = ?", id)
+	if err != nil {
+		return fmt.Errorf("failed to delete bean: %w", err)
+	}
+	return nil
+}
+
+// ========== Roaster Operations ==========
 
 func (s *SQLiteStore) CreateRoaster(req *models.CreateRoasterRequest) (*models.Roaster, error) {
 	result, err := s.db.Exec(`
@@ -380,31 +539,32 @@ func (s *SQLiteStore) CreateRoaster(req *models.CreateRoasterRequest) (*models.R
 		return nil, fmt.Errorf("failed to get last insert id: %w", err)
 	}
 
-	return s.GetRoaster(int(id))
+	return s.getRoaster(int(id))
 }
 
-func (s *SQLiteStore) GetRoaster(id int) (*models.Roaster, error) {
+func (s *SQLiteStore) GetRoasterByRKey(rkey string) (*models.Roaster, error) {
+	id, err := rkeyToID(rkey)
+	if err != nil {
+		return nil, err
+	}
+	return s.getRoaster(id)
+}
+
+func (s *SQLiteStore) getRoaster(id int) (*models.Roaster, error) {
 	roaster := &models.Roaster{}
+	var roasterID int
+
 	err := s.db.QueryRow(`
 		SELECT id, name, location, website, created_at
 		FROM roasters WHERE id = ?
-	`, id).Scan(&roaster.ID, &roaster.Name, &roaster.Location, &roaster.Website, &roaster.CreatedAt)
+	`, id).Scan(&roasterID, &roaster.Name, &roaster.Location, &roaster.Website, &roaster.CreatedAt)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get roaster: %w", err)
 	}
 
+	roaster.RKey = idToRKey(roasterID)
 	return roaster, nil
-}
-
-// GetRoasterByRKey retrieves a roaster by its rkey (for SQLite, rkey is the string ID)
-func (s *SQLiteStore) GetRoasterByRKey(rkey string) (*models.Roaster, error) {
-	var id int
-	_, err := fmt.Sscanf(rkey, "%d", &id)
-	if err != nil {
-		return nil, fmt.Errorf("invalid rkey: %w", err)
-	}
-	return s.GetRoaster(id)
 }
 
 func (s *SQLiteStore) ListRoasters() ([]*models.Roaster, error) {
@@ -422,18 +582,27 @@ func (s *SQLiteStore) ListRoasters() ([]*models.Roaster, error) {
 	var roasters []*models.Roaster
 	for rows.Next() {
 		roaster := &models.Roaster{}
-		err := rows.Scan(&roaster.ID, &roaster.Name, &roaster.Location, &roaster.Website, &roaster.CreatedAt)
+		var roasterID int
+
+		err := rows.Scan(&roasterID, &roaster.Name, &roaster.Location, &roaster.Website, &roaster.CreatedAt)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan roaster: %w", err)
 		}
+
+		roaster.RKey = idToRKey(roasterID)
 		roasters = append(roasters, roaster)
 	}
 
 	return roasters, nil
 }
 
-func (s *SQLiteStore) UpdateRoaster(id int, req *models.UpdateRoasterRequest) error {
-	_, err := s.db.Exec(`
+func (s *SQLiteStore) UpdateRoasterByRKey(rkey string, req *models.UpdateRoasterRequest) error {
+	id, err := rkeyToID(rkey)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.db.Exec(`
 		UPDATE roasters 
 		SET name = ?, location = ?, website = ?
 		WHERE id = ?
@@ -446,79 +615,20 @@ func (s *SQLiteStore) UpdateRoaster(id int, req *models.UpdateRoasterRequest) er
 	return nil
 }
 
-// UpdateRoasterByRKey updates a roaster by its rkey (for SQLite, rkey is the string ID)
-func (s *SQLiteStore) UpdateRoasterByRKey(rkey string, req *models.UpdateRoasterRequest) error {
-	var id int
-	_, err := fmt.Sscanf(rkey, "%d", &id)
+func (s *SQLiteStore) DeleteRoasterByRKey(rkey string) error {
+	id, err := rkeyToID(rkey)
 	if err != nil {
-		return fmt.Errorf("invalid rkey: %w", err)
+		return err
 	}
-	return s.UpdateRoaster(id, req)
-}
 
-func (s *SQLiteStore) DeleteRoaster(id int) error {
-	_, err := s.db.Exec("DELETE FROM roasters WHERE id = ?", id)
+	_, err = s.db.Exec("DELETE FROM roasters WHERE id = ?", id)
 	if err != nil {
 		return fmt.Errorf("failed to delete roaster: %w", err)
 	}
 	return nil
 }
 
-// DeleteRoasterByRKey deletes a roaster by its rkey (for SQLite, rkey is the string ID)
-func (s *SQLiteStore) DeleteRoasterByRKey(rkey string) error {
-	var id int
-	_, err := fmt.Sscanf(rkey, "%d", &id)
-	if err != nil {
-		return fmt.Errorf("invalid rkey: %w", err)
-	}
-	return s.DeleteRoaster(id)
-}
-
-// Bean update/delete operations
-
-func (s *SQLiteStore) UpdateBean(id int, req *models.UpdateBeanRequest) error {
-	_, err := s.db.Exec(`
-		UPDATE beans 
-		SET name = ?, origin = ?, roast_level = ?, process = ?, description = ?, roaster_id = ?
-		WHERE id = ?
-	`, req.Name, req.Origin, req.RoastLevel, req.Process, req.Description, req.RoasterID, id)
-
-	if err != nil {
-		return fmt.Errorf("failed to update bean: %w", err)
-	}
-
-	return nil
-}
-
-// UpdateBeanByRKey updates a bean by its rkey (for SQLite, rkey is the string ID)
-func (s *SQLiteStore) UpdateBeanByRKey(rkey string, req *models.UpdateBeanRequest) error {
-	var id int
-	_, err := fmt.Sscanf(rkey, "%d", &id)
-	if err != nil {
-		return fmt.Errorf("invalid rkey: %w", err)
-	}
-	return s.UpdateBean(id, req)
-}
-
-func (s *SQLiteStore) DeleteBean(id int) error {
-	_, err := s.db.Exec("DELETE FROM beans WHERE id = ?", id)
-	if err != nil {
-		return fmt.Errorf("failed to delete bean: %w", err)
-	}
-	return nil
-}
-
-// DeleteBeanByRKey deletes a bean by its rkey (for SQLite, rkey is the string ID)
-func (s *SQLiteStore) DeleteBeanByRKey(rkey string) error {
-	var id int
-	_, err := fmt.Sscanf(rkey, "%d", &id)
-	if err != nil {
-		return fmt.Errorf("invalid rkey: %w", err)
-	}
-	return s.DeleteBean(id)
-}
-
-// Grinder operations
+// ========== Grinder Operations ==========
 
 func (s *SQLiteStore) CreateGrinder(req *models.CreateGrinderRequest) (*models.Grinder, error) {
 	result, err := s.db.Exec(`
@@ -534,31 +644,32 @@ func (s *SQLiteStore) CreateGrinder(req *models.CreateGrinderRequest) (*models.G
 		return nil, fmt.Errorf("failed to get last insert id: %w", err)
 	}
 
-	return s.GetGrinder(int(id))
+	return s.getGrinder(int(id))
 }
 
-func (s *SQLiteStore) GetGrinder(id int) (*models.Grinder, error) {
+func (s *SQLiteStore) GetGrinderByRKey(rkey string) (*models.Grinder, error) {
+	id, err := rkeyToID(rkey)
+	if err != nil {
+		return nil, err
+	}
+	return s.getGrinder(id)
+}
+
+func (s *SQLiteStore) getGrinder(id int) (*models.Grinder, error) {
 	grinder := &models.Grinder{}
+	var grinderID int
+
 	err := s.db.QueryRow(`
 		SELECT id, name, grinder_type, burr_type, notes, created_at
 		FROM grinders WHERE id = ?
-	`, id).Scan(&grinder.ID, &grinder.Name, &grinder.GrinderType, &grinder.BurrType, &grinder.Notes, &grinder.CreatedAt)
+	`, id).Scan(&grinderID, &grinder.Name, &grinder.GrinderType, &grinder.BurrType, &grinder.Notes, &grinder.CreatedAt)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get grinder: %w", err)
 	}
 
+	grinder.RKey = idToRKey(grinderID)
 	return grinder, nil
-}
-
-// GetGrinderByRKey retrieves a grinder by its rkey (for SQLite, rkey is the string ID)
-func (s *SQLiteStore) GetGrinderByRKey(rkey string) (*models.Grinder, error) {
-	var id int
-	_, err := fmt.Sscanf(rkey, "%d", &id)
-	if err != nil {
-		return nil, fmt.Errorf("invalid rkey: %w", err)
-	}
-	return s.GetGrinder(id)
 }
 
 func (s *SQLiteStore) ListGrinders() ([]*models.Grinder, error) {
@@ -576,18 +687,27 @@ func (s *SQLiteStore) ListGrinders() ([]*models.Grinder, error) {
 	var grinders []*models.Grinder
 	for rows.Next() {
 		grinder := &models.Grinder{}
-		err := rows.Scan(&grinder.ID, &grinder.Name, &grinder.GrinderType, &grinder.BurrType, &grinder.Notes, &grinder.CreatedAt)
+		var grinderID int
+
+		err := rows.Scan(&grinderID, &grinder.Name, &grinder.GrinderType, &grinder.BurrType, &grinder.Notes, &grinder.CreatedAt)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan grinder: %w", err)
 		}
+
+		grinder.RKey = idToRKey(grinderID)
 		grinders = append(grinders, grinder)
 	}
 
 	return grinders, nil
 }
 
-func (s *SQLiteStore) UpdateGrinder(id int, req *models.UpdateGrinderRequest) error {
-	_, err := s.db.Exec(`
+func (s *SQLiteStore) UpdateGrinderByRKey(rkey string, req *models.UpdateGrinderRequest) error {
+	id, err := rkeyToID(rkey)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.db.Exec(`
 		UPDATE grinders 
 		SET name = ?, grinder_type = ?, burr_type = ?, notes = ?
 		WHERE id = ?
@@ -600,35 +720,20 @@ func (s *SQLiteStore) UpdateGrinder(id int, req *models.UpdateGrinderRequest) er
 	return nil
 }
 
-// UpdateGrinderByRKey updates a grinder by its rkey (for SQLite, rkey is the string ID)
-func (s *SQLiteStore) UpdateGrinderByRKey(rkey string, req *models.UpdateGrinderRequest) error {
-	var id int
-	_, err := fmt.Sscanf(rkey, "%d", &id)
+func (s *SQLiteStore) DeleteGrinderByRKey(rkey string) error {
+	id, err := rkeyToID(rkey)
 	if err != nil {
-		return fmt.Errorf("invalid rkey: %w", err)
+		return err
 	}
-	return s.UpdateGrinder(id, req)
-}
 
-func (s *SQLiteStore) DeleteGrinder(id int) error {
-	_, err := s.db.Exec("DELETE FROM grinders WHERE id = ?", id)
+	_, err = s.db.Exec("DELETE FROM grinders WHERE id = ?", id)
 	if err != nil {
 		return fmt.Errorf("failed to delete grinder: %w", err)
 	}
 	return nil
 }
 
-// DeleteGrinderByRKey deletes a grinder by its rkey (for SQLite, rkey is the string ID)
-func (s *SQLiteStore) DeleteGrinderByRKey(rkey string) error {
-	var id int
-	_, err := fmt.Sscanf(rkey, "%d", &id)
-	if err != nil {
-		return fmt.Errorf("invalid rkey: %w", err)
-	}
-	return s.DeleteGrinder(id)
-}
-
-// Brewer operations
+// ========== Brewer Operations ==========
 
 func (s *SQLiteStore) CreateBrewer(req *models.CreateBrewerRequest) (*models.Brewer, error) {
 	result, err := s.db.Exec(`
@@ -644,31 +749,32 @@ func (s *SQLiteStore) CreateBrewer(req *models.CreateBrewerRequest) (*models.Bre
 		return nil, fmt.Errorf("failed to get last insert id: %w", err)
 	}
 
-	return s.GetBrewer(int(id))
+	return s.getBrewer(int(id))
 }
 
-func (s *SQLiteStore) GetBrewer(id int) (*models.Brewer, error) {
+func (s *SQLiteStore) GetBrewerByRKey(rkey string) (*models.Brewer, error) {
+	id, err := rkeyToID(rkey)
+	if err != nil {
+		return nil, err
+	}
+	return s.getBrewer(id)
+}
+
+func (s *SQLiteStore) getBrewer(id int) (*models.Brewer, error) {
 	brewer := &models.Brewer{}
+	var brewerID int
+
 	err := s.db.QueryRow(`
 		SELECT id, name, description, created_at
 		FROM brewers WHERE id = ?
-	`, id).Scan(&brewer.ID, &brewer.Name, &brewer.Description, &brewer.CreatedAt)
+	`, id).Scan(&brewerID, &brewer.Name, &brewer.Description, &brewer.CreatedAt)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get brewer: %w", err)
 	}
 
+	brewer.RKey = idToRKey(brewerID)
 	return brewer, nil
-}
-
-// GetBrewerByRKey retrieves a brewer by its rkey (for SQLite, rkey is the string ID)
-func (s *SQLiteStore) GetBrewerByRKey(rkey string) (*models.Brewer, error) {
-	var id int
-	_, err := fmt.Sscanf(rkey, "%d", &id)
-	if err != nil {
-		return nil, fmt.Errorf("invalid rkey: %w", err)
-	}
-	return s.GetBrewer(id)
 }
 
 func (s *SQLiteStore) ListBrewers() ([]*models.Brewer, error) {
@@ -686,18 +792,27 @@ func (s *SQLiteStore) ListBrewers() ([]*models.Brewer, error) {
 	var brewers []*models.Brewer
 	for rows.Next() {
 		brewer := &models.Brewer{}
-		err := rows.Scan(&brewer.ID, &brewer.Name, &brewer.Description, &brewer.CreatedAt)
+		var brewerID int
+
+		err := rows.Scan(&brewerID, &brewer.Name, &brewer.Description, &brewer.CreatedAt)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan brewer: %w", err)
 		}
+
+		brewer.RKey = idToRKey(brewerID)
 		brewers = append(brewers, brewer)
 	}
 
 	return brewers, nil
 }
 
-func (s *SQLiteStore) UpdateBrewer(id int, req *models.UpdateBrewerRequest) error {
-	_, err := s.db.Exec(`
+func (s *SQLiteStore) UpdateBrewerByRKey(rkey string, req *models.UpdateBrewerRequest) error {
+	id, err := rkeyToID(rkey)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.db.Exec(`
 		UPDATE brewers 
 		SET name = ?, description = ?
 		WHERE id = ?
@@ -710,35 +825,20 @@ func (s *SQLiteStore) UpdateBrewer(id int, req *models.UpdateBrewerRequest) erro
 	return nil
 }
 
-// UpdateBrewerByRKey updates a brewer by its rkey (for SQLite, rkey is the string ID)
-func (s *SQLiteStore) UpdateBrewerByRKey(rkey string, req *models.UpdateBrewerRequest) error {
-	var id int
-	_, err := fmt.Sscanf(rkey, "%d", &id)
+func (s *SQLiteStore) DeleteBrewerByRKey(rkey string) error {
+	id, err := rkeyToID(rkey)
 	if err != nil {
-		return fmt.Errorf("invalid rkey: %w", err)
+		return err
 	}
-	return s.UpdateBrewer(id, req)
-}
 
-func (s *SQLiteStore) DeleteBrewer(id int) error {
-	_, err := s.db.Exec("DELETE FROM brewers WHERE id = ?", id)
+	_, err = s.db.Exec("DELETE FROM brewers WHERE id = ?", id)
 	if err != nil {
 		return fmt.Errorf("failed to delete brewer: %w", err)
 	}
 	return nil
 }
 
-// DeleteBrewerByRKey deletes a brewer by its rkey (for SQLite, rkey is the string ID)
-func (s *SQLiteStore) DeleteBrewerByRKey(rkey string) error {
-	var id int
-	_, err := fmt.Sscanf(rkey, "%d", &id)
-	if err != nil {
-		return fmt.Errorf("invalid rkey: %w", err)
-	}
-	return s.DeleteBrewer(id)
-}
-
-// Pour operations
+// ========== Pour Operations ==========
 
 func (s *SQLiteStore) CreatePours(brewID int, pours []models.CreatePourData) error {
 	if len(pours) == 0 {
@@ -777,7 +877,7 @@ func (s *SQLiteStore) CreatePours(brewID int, pours []models.CreatePourData) err
 
 func (s *SQLiteStore) ListPours(brewID int) ([]*models.Pour, error) {
 	rows, err := s.db.Query(`
-		SELECT id, brew_id, pour_number, water_amount, time_seconds, created_at
+		SELECT pour_number, water_amount, time_seconds, created_at
 		FROM pours
 		WHERE brew_id = ?
 		ORDER BY pour_number ASC
@@ -791,7 +891,7 @@ func (s *SQLiteStore) ListPours(brewID int) ([]*models.Pour, error) {
 	var pours []*models.Pour
 	for rows.Next() {
 		pour := &models.Pour{}
-		err := rows.Scan(&pour.ID, &pour.BrewID, &pour.PourNumber, &pour.WaterAmount, &pour.TimeSeconds, &pour.CreatedAt)
+		err := rows.Scan(&pour.PourNumber, &pour.WaterAmount, &pour.TimeSeconds, &pour.CreatedAt)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan pour: %w", err)
 		}

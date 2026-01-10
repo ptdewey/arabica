@@ -89,18 +89,24 @@ func poursToJSON(pours []*models.Pour) string {
 	return string(jsonBytes)
 }
 
-// intPtrEquals checks if a *int pointer equals an int value
-func intPtrEquals(ptr *int, val int) bool {
-	if ptr == nil {
-		return false
-	}
-	return *ptr == val
+// ptr returns a pointer to the given value
+func ptr[T any](v T) *T {
+	return &v
 }
 
-// intPtrValue returns the dereferenced value of a *int, or 0 if nil
-func intPtrValue(ptr *int) int {
-	if ptr == nil {
-		return 0
+// ptrEquals checks if a pointer equals a value
+func ptrEquals[T comparable](p *T, val T) bool {
+	if p == nil {
+		return false
 	}
-	return *ptr
+	return *p == val
+}
+
+// ptrValue returns the dereferenced value of a pointer, or zero value if nil
+func ptrValue[T any](p *T) T {
+	if p == nil {
+		var zero T
+		return zero
+	}
+	return *p
 }

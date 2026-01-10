@@ -1,6 +1,6 @@
 {
   "lexicon": 1,
-  "id": "com.arabica.grinder",
+  "id": "social.arabica.alpha.grinder",
   "defs": {
     "main": {
       "type": "record",
@@ -17,13 +17,13 @@
           },
           "grinderType": {
             "type": "string",
-            "enum": ["hand", "electric", "electric_hand"],
+            "enum": ["hand", "electric", "portable_electric"],
             "maxLength": 20,
             "description": "Type of grinder mechanism"
           },
           "burrType": {
             "type": "string",
-            "enum": ["conical", "flat", ""],
+            "enum": ["conical", "flat", "blade", ""],
             "maxLength": 20,
             "description": "Type of burr (empty string for unknown)"
           },

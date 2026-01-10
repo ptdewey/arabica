@@ -24,8 +24,8 @@ func init() {
 		"formatInt":       formatInt,
 		"formatRoasterID": formatRoasterID,
 		"poursToJSON":     poursToJSON,
-		"intPtrEquals":    intPtrEquals,
-		"intPtrValue":     intPtrValue,
+		"ptrEquals":       ptrEquals[int],
+		"ptrValue":        ptrValue[int],
 	})
 
 	// Parse all templates

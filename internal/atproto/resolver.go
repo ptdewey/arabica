@@ -9,168 +9,89 @@ import (
 	"github.com/bluesky-social/indigo/atproto/syntax"
 )
 
-// ResolveATURI parses an AT-URI and returns its components
-// AT-URI format: at://did:plc:abc123/com.arabica.brew/3jxyabc
-func ResolveATURI(uri string) (did string, collection string, rkey string, err error) {
-	atURI, err := syntax.ParseATURI(uri)
-	if err != nil {
-		return "", "", "", fmt.Errorf("invalid AT-URI: %w", err)
-	}
-
-	did = atURI.Authority().String()
-	collection = atURI.Collection().String()
-	rkey = atURI.RecordKey().String()
-
-	return did, collection, rkey, nil
+// ATURIComponents holds the parsed components of an AT-URI
+type ATURIComponents struct {
+	DID        string
+	Collection string
+	RKey       string
 }
 
-// ResolveBeanRef fetches a bean record from an AT-URI
-// This performs a network call to the user's PDS to fetch the referenced bean
-func ResolveBeanRef(ctx context.Context, client *Client, atURI string, sessionID string) (*models.Bean, error) {
-	if atURI == "" {
-		return nil, nil // No reference to resolve
+// ResolveATURI parses an AT-URI and returns its components
+// AT-URI format: at://did:plc:abc123/social.arabica.brew/3jxyabc
+func ResolveATURI(uri string) (*ATURIComponents, error) {
+	atURI, err := syntax.ParseATURI(uri)
+	if err != nil {
+		return nil, fmt.Errorf("invalid AT-URI: %w", err)
 	}
 
-	// Parse the AT-URI to extract components
-	did, collection, rkey, err := ResolveATURI(atURI)
+	return &ATURIComponents{
+		DID:        atURI.Authority().String(),
+		Collection: atURI.Collection().String(),
+		RKey:       atURI.RecordKey().String(),
+	}, nil
+}
+
+// resolveRef is a generic helper that fetches and converts a record from an AT-URI
+func resolveRef[T any](
+	ctx context.Context,
+	client *Client,
+	atURI string,
+	sessionID string,
+	expectedCollection string,
+	convert func(map[string]interface{}, string) (*T, error),
+) (*T, error) {
+	if atURI == "" {
+		return nil, nil
+	}
+
+	components, err := ResolveATURI(atURI)
 	if err != nil {
 		return nil, err
 	}
 
-	// Validate it's the right collection type
-	if collection != "com.arabica.bean" {
-		return nil, fmt.Errorf("expected com.arabica.bean collection, got %s", collection)
+	if components.Collection != expectedCollection {
+		return nil, fmt.Errorf("expected %s collection, got %s", expectedCollection, components.Collection)
 	}
 
-	// Fetch the record from the PDS
-	didObj, err := syntax.ParseDID(did)
+	didObj, err := syntax.ParseDID(components.DID)
 	if err != nil {
 		return nil, fmt.Errorf("invalid DID: %w", err)
 	}
 
 	output, err := client.GetRecord(ctx, didObj, sessionID, &GetRecordInput{
-		Collection: collection,
-		RKey:       rkey,
+		Collection: components.Collection,
+		RKey:       components.RKey,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch bean record: %w", err)
+		return nil, fmt.Errorf("failed to fetch %s record: %w", expectedCollection, err)
 	}
 
-	// Convert the record to a Bean model
-	bean, err := RecordToBean(output.Value, atURI)
+	result, err := convert(output.Value, atURI)
 	if err != nil {
-		return nil, fmt.Errorf("failed to convert bean record: %w", err)
+		return nil, fmt.Errorf("failed to convert %s record: %w", expectedCollection, err)
 	}
 
-	return bean, nil
+	return result, nil
+}
+
+// ResolveBeanRef fetches a bean record from an AT-URI
+func ResolveBeanRef(ctx context.Context, client *Client, atURI string, sessionID string) (*models.Bean, error) {
+	return resolveRef(ctx, client, atURI, sessionID, NSIDBean, RecordToBean)
 }
 
 // ResolveRoasterRef fetches a roaster record from an AT-URI
 func ResolveRoasterRef(ctx context.Context, client *Client, atURI string, sessionID string) (*models.Roaster, error) {
-	if atURI == "" {
-		return nil, nil
-	}
-
-	did, collection, rkey, err := ResolveATURI(atURI)
-	if err != nil {
-		return nil, err
-	}
-
-	if collection != "com.arabica.roaster" {
-		return nil, fmt.Errorf("expected com.arabica.roaster collection, got %s", collection)
-	}
-
-	didObj, err := syntax.ParseDID(did)
-	if err != nil {
-		return nil, fmt.Errorf("invalid DID: %w", err)
-	}
-
-	output, err := client.GetRecord(ctx, didObj, sessionID, &GetRecordInput{
-		Collection: collection,
-		RKey:       rkey,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch roaster record: %w", err)
-	}
-
-	roaster, err := RecordToRoaster(output.Value, atURI)
-	if err != nil {
-		return nil, fmt.Errorf("failed to convert roaster record: %w", err)
-	}
-
-	return roaster, nil
+	return resolveRef(ctx, client, atURI, sessionID, NSIDRoaster, RecordToRoaster)
 }
 
 // ResolveGrinderRef fetches a grinder record from an AT-URI
 func ResolveGrinderRef(ctx context.Context, client *Client, atURI string, sessionID string) (*models.Grinder, error) {
-	if atURI == "" {
-		return nil, nil
-	}
-
-	did, collection, rkey, err := ResolveATURI(atURI)
-	if err != nil {
-		return nil, err
-	}
-
-	if collection != "com.arabica.grinder" {
-		return nil, fmt.Errorf("expected com.arabica.grinder collection, got %s", collection)
-	}
-
-	didObj, err := syntax.ParseDID(did)
-	if err != nil {
-		return nil, fmt.Errorf("invalid DID: %w", err)
-	}
-
-	output, err := client.GetRecord(ctx, didObj, sessionID, &GetRecordInput{
-		Collection: collection,
-		RKey:       rkey,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch grinder record: %w", err)
-	}
-
-	grinder, err := RecordToGrinder(output.Value, atURI)
-	if err != nil {
-		return nil, fmt.Errorf("failed to convert grinder record: %w", err)
-	}
-
-	return grinder, nil
+	return resolveRef(ctx, client, atURI, sessionID, NSIDGrinder, RecordToGrinder)
 }
 
 // ResolveBrewerRef fetches a brewer record from an AT-URI
 func ResolveBrewerRef(ctx context.Context, client *Client, atURI string, sessionID string) (*models.Brewer, error) {
-	if atURI == "" {
-		return nil, nil
-	}
-
-	did, collection, rkey, err := ResolveATURI(atURI)
-	if err != nil {
-		return nil, err
-	}
-
-	if collection != "com.arabica.brewer" {
-		return nil, fmt.Errorf("expected com.arabica.brewer collection, got %s", collection)
-	}
-
-	didObj, err := syntax.ParseDID(did)
-	if err != nil {
-		return nil, fmt.Errorf("invalid DID: %w", err)
-	}
-
-	output, err := client.GetRecord(ctx, didObj, sessionID, &GetRecordInput{
-		Collection: collection,
-		RKey:       rkey,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch brewer record: %w", err)
-	}
-
-	brewer, err := RecordToBrewer(output.Value, atURI)
-	if err != nil {
-		return nil, fmt.Errorf("failed to convert brewer record: %w", err)
-	}
-
-	return brewer, nil
+	return resolveRef(ctx, client, atURI, sessionID, NSIDBrewer, RecordToBrewer)
 }
 
 // ResolveBrewRefs resolves all references within a brew record
@@ -186,7 +107,7 @@ func ResolveBrewRefs(ctx context.Context, client *Client, brew *models.Brew, bea
 		}
 
 		// If bean has a roaster reference, resolve it too
-		if brew.Bean != nil && brew.Bean.RoasterID != nil {
+		if brew.Bean != nil && brew.Bean.RoasterRKey != "" {
 			// Note: We need to get the roasterRef from the bean record
 			// This requires storing the raw record data or fetching it again
 			// For now, we'll skip nested resolution and handle it in store.go
