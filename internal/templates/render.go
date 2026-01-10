@@ -1,44 +1,77 @@
 package templates
 
 import (
-	"fmt"
 	"html/template"
 	"net/http"
+	"os"
+	"sync"
 
 	"arabica/internal/models"
 )
 
-var templates *template.Template
+var (
+	templates     *template.Template
+	templatesOnce sync.Once
+	templatesErr  error
+)
 
-// Initialize loads all template files
-func init() {
-	var err error
+// loadTemplates initializes templates lazily - only when first needed
+func loadTemplates() error {
+	templatesOnce.Do(func() {
+		// Parse all template files including partials
+		templates = template.New("")
+		templates = templates.Funcs(template.FuncMap{
+			"formatTemp":      formatTemp,
+			"formatTime":      formatTime,
+			"formatRating":    formatRating,
+			"formatID":        formatID,
+			"formatInt":       formatInt,
+			"formatRoasterID": formatRoasterID,
+			"poursToJSON":     poursToJSON,
+			"ptrEquals":       ptrEquals[int],
+			"ptrValue":        ptrValue[int],
+		})
 
-	// Parse all template files including partials
-	templates = template.New("")
-	templates = templates.Funcs(template.FuncMap{
-		"formatTemp":      formatTemp,
-		"formatTime":      formatTime,
-		"formatRating":    formatRating,
-		"formatID":        formatID,
-		"formatInt":       formatInt,
-		"formatRoasterID": formatRoasterID,
-		"poursToJSON":     poursToJSON,
-		"ptrEquals":       ptrEquals[int],
-		"ptrValue":        ptrValue[int],
+		// Try to find templates relative to working directory
+		// This supports both running from project root and from package directory
+		paths := []string{
+			"internal/templates/*.tmpl",
+			"../../internal/templates/*.tmpl", // for when tests run from package dir
+		}
+
+		var err error
+		for _, path := range paths {
+			if _, statErr := os.Stat(path[:len(path)-6]); statErr == nil || os.IsExist(statErr) {
+				templates, err = templates.ParseGlob(path)
+				if err == nil {
+					break
+				}
+			}
+		}
+		if err != nil {
+			templatesErr = err
+			return
+		}
+
+		// Parse partials
+		partialPaths := []string{
+			"internal/templates/partials/*.tmpl",
+			"../../internal/templates/partials/*.tmpl",
+		}
+
+		for _, path := range partialPaths {
+			if _, statErr := os.Stat(path[:len(path)-6]); statErr == nil || os.IsExist(statErr) {
+				templates, err = templates.ParseGlob(path)
+				if err == nil {
+					break
+				}
+			}
+		}
+		if err != nil {
+			templatesErr = err
+		}
 	})
-
-	// Parse all templates
-	templates, err = templates.ParseGlob("internal/templates/*.tmpl")
-	if err != nil {
-		panic(fmt.Sprintf("Failed to parse templates: %v", err))
-	}
-
-	// Parse partials
-	templates, err = templates.ParseGlob("internal/templates/partials/*.tmpl")
-	if err != nil {
-		panic(fmt.Sprintf("Failed to parse partial templates: %v", err))
-	}
+	return templatesErr
 }
 
 // Data structures for templates
@@ -68,12 +101,18 @@ type BrewListData struct {
 
 // RenderTemplate renders a template with layout
 func RenderTemplate(w http.ResponseWriter, tmpl string, data *PageData) error {
+	if err := loadTemplates(); err != nil {
+		return err
+	}
 	// Execute the layout template which calls the content template
 	return templates.ExecuteTemplate(w, "layout", data)
 }
 
 // RenderHome renders the home page
 func RenderHome(w http.ResponseWriter, isAuthenticated bool, userDID string) error {
+	if err := loadTemplates(); err != nil {
+		return err
+	}
 	data := &PageData{
 		Title:           "Home",
 		IsAuthenticated: isAuthenticated,
@@ -87,6 +126,9 @@ func RenderHome(w http.ResponseWriter, isAuthenticated bool, userDID string) err
 
 // RenderBrewList renders the brew list page
 func RenderBrewList(w http.ResponseWriter, brews []*models.Brew, isAuthenticated bool, userDID string) error {
+	if err := loadTemplates(); err != nil {
+		return err
+	}
 	brewList := make([]*BrewListData, len(brews))
 	for i, brew := range brews {
 		brewList[i] = &BrewListData{
@@ -110,6 +152,9 @@ func RenderBrewList(w http.ResponseWriter, brews []*models.Brew, isAuthenticated
 
 // RenderBrewForm renders the brew form page
 func RenderBrewForm(w http.ResponseWriter, beans []*models.Bean, roasters []*models.Roaster, grinders []*models.Grinder, brewers []*models.Brewer, brew *models.Brew, isAuthenticated bool, userDID string) error {
+	if err := loadTemplates(); err != nil {
+		return err
+	}
 	var brewData *BrewData
 	title := "New Brew"
 
@@ -138,6 +183,9 @@ func RenderBrewForm(w http.ResponseWriter, beans []*models.Bean, roasters []*mod
 
 // RenderManage renders the manage page
 func RenderManage(w http.ResponseWriter, beans []*models.Bean, roasters []*models.Roaster, grinders []*models.Grinder, brewers []*models.Brewer, isAuthenticated bool, userDID string) error {
+	if err := loadTemplates(); err != nil {
+		return err
+	}
 	data := &PageData{
 		Title:           "Manage",
 		Beans:           beans,

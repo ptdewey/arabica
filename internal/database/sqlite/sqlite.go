@@ -270,7 +270,13 @@ func (s *SQLiteStore) ListBrews(userID int) ([]*models.Brew, error) {
 	}
 	defer rows.Close()
 
-	var brews []*models.Brew
+	// First pass: collect brew data and IDs
+	type brewWithID struct {
+		brew   *models.Brew
+		brewID int
+	}
+	var brewsWithIDs []brewWithID
+
 	for rows.Next() {
 		brew := &models.Brew{
 			Bean: &models.Bean{
@@ -316,14 +322,26 @@ func (s *SQLiteStore) ListBrews(userID int) ([]*models.Brew, error) {
 			brew.Bean.Roaster.RKey = brew.Bean.RoasterRKey
 		}
 
-		// Load pours for this brew
-		pours, err := s.ListPours(brewID)
+		brewsWithIDs = append(brewsWithIDs, brewWithID{brew: brew, brewID: brewID})
+	}
+
+	// Check for errors from iterating over rows
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating brews: %w", err)
+	}
+
+	// Close rows before making additional queries
+	rows.Close()
+
+	// Second pass: load pours for each brew (now that rows is closed)
+	brews := make([]*models.Brew, len(brewsWithIDs))
+	for i, bwid := range brewsWithIDs {
+		pours, err := s.ListPours(bwid.brewID)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get pours: %w", err)
 		}
-		brew.Pours = pours
-
-		brews = append(brews, brew)
+		bwid.brew.Pours = pours
+		brews[i] = bwid.brew
 	}
 
 	return brews, nil

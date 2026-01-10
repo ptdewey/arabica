@@ -28,8 +28,8 @@ func LoggingMiddleware(logger zerolog.Logger) func(http.Handler) http.Handler {
 			// Calculate duration
 			duration := time.Since(start)
 
-			// Build structured log event
-			logEvent := logger.Info().
+			// Build log context (data to include in the log)
+			logContext := zerolog.Dict().
 				Str("method", r.Method).
 				Str("path", r.URL.Path).
 				Str("query", r.URL.RawQuery).
@@ -42,29 +42,57 @@ func LoggingMiddleware(logger zerolog.Logger) func(http.Handler) http.Handler {
 
 			// Add referer if present
 			if referer := r.Referer(); referer != "" {
-				logEvent.Str("referer", referer)
+				logContext.Str("referer", referer)
 			}
 
 			// Add request ID if present (could be added by another middleware)
 			if reqID := r.Header.Get("X-Request-ID"); reqID != "" {
-				logEvent.Str("request_id", reqID)
+				logContext.Str("request_id", reqID)
 			}
 
 			// Add content type if present
 			if contentType := r.Header.Get("Content-Type"); contentType != "" {
-				logEvent.Str("content_type", contentType)
+				logContext.Str("content_type", contentType)
 			}
 
 			// Add authenticated user DID if present
 			if did, err := atproto.GetAuthenticatedDID(r.Context()); err == nil && did != "" {
-				logEvent.Str("user_did", did)
+				logContext.Str("user_did", did)
 			}
 
-			// Change log level based on status code
+			// Select log level based on status code and log with context
+			var logEvent *zerolog.Event
 			if rw.statusCode >= 500 {
-				logEvent = logger.Error().Fields(logEvent)
+				logEvent = logger.Error()
 			} else if rw.statusCode >= 400 {
-				logEvent = logger.Warn().Fields(logEvent)
+				logEvent = logger.Warn()
+			} else {
+				logEvent = logger.Info()
+			}
+
+			logEvent.
+				Str("method", r.Method).
+				Str("path", r.URL.Path).
+				Str("query", r.URL.RawQuery).
+				Int("status", rw.statusCode).
+				Dur("duration", duration).
+				Str("remote_addr", r.RemoteAddr).
+				Str("user_agent", r.UserAgent()).
+				Int64("bytes_written", rw.bytesWritten).
+				Str("proto", r.Proto)
+
+			// Add optional fields
+			if referer := r.Referer(); referer != "" {
+				logEvent.Str("referer", referer)
+			}
+			if reqID := r.Header.Get("X-Request-ID"); reqID != "" {
+				logEvent.Str("request_id", reqID)
+			}
+			if contentType := r.Header.Get("Content-Type"); contentType != "" {
+				logEvent.Str("content_type", contentType)
+			}
+			if did, err := atproto.GetAuthenticatedDID(r.Context()); err == nil && did != "" {
+				logEvent.Str("user_did", did)
 			}
 
 			logEvent.Msg("HTTP request")
