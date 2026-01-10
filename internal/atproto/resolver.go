@@ -79,6 +79,56 @@ func ResolveBeanRef(ctx context.Context, client *Client, atURI string, sessionID
 	return resolveRef(ctx, client, atURI, sessionID, NSIDBean, RecordToBean)
 }
 
+// ResolveBeanRefWithRoaster fetches a bean record and also resolves its roaster reference
+func ResolveBeanRefWithRoaster(ctx context.Context, client *Client, atURI string, sessionID string) (*models.Bean, error) {
+	if atURI == "" {
+		return nil, nil
+	}
+
+	components, err := ResolveATURI(atURI)
+	if err != nil {
+		return nil, err
+	}
+
+	if components.Collection != NSIDBean {
+		return nil, fmt.Errorf("expected %s collection, got %s", NSIDBean, components.Collection)
+	}
+
+	didObj, err := syntax.ParseDID(components.DID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid DID: %w", err)
+	}
+
+	output, err := client.GetRecord(ctx, didObj, sessionID, &GetRecordInput{
+		Collection: components.Collection,
+		RKey:       components.RKey,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch bean record: %w", err)
+	}
+
+	bean, err := RecordToBean(output.Value, atURI)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert bean record: %w", err)
+	}
+
+	// Extract and resolve roaster reference if present
+	if roasterRef, ok := output.Value["roasterRef"].(string); ok && roasterRef != "" {
+		// Extract rkey
+		if roasterComponents, err := ResolveATURI(roasterRef); err == nil {
+			bean.RoasterRKey = roasterComponents.RKey
+		}
+		// Resolve the roaster
+		bean.Roaster, err = ResolveRoasterRef(ctx, client, roasterRef, sessionID)
+		if err != nil {
+			// Log but don't fail - roaster resolution is optional
+			return bean, nil
+		}
+	}
+
+	return bean, nil
+}
+
 // ResolveRoasterRef fetches a roaster record from an AT-URI
 func ResolveRoasterRef(ctx context.Context, client *Client, atURI string, sessionID string) (*models.Roaster, error) {
 	return resolveRef(ctx, client, atURI, sessionID, NSIDRoaster, RecordToRoaster)
@@ -99,18 +149,11 @@ func ResolveBrewerRef(ctx context.Context, client *Client, atURI string, session
 func ResolveBrewRefs(ctx context.Context, client *Client, brew *models.Brew, beanRef, grinderRef, brewerRef, sessionID string) error {
 	var err error
 
-	// Resolve bean reference (required)
+	// Resolve bean reference (required) - also resolves nested roaster
 	if beanRef != "" {
-		brew.Bean, err = ResolveBeanRef(ctx, client, beanRef, sessionID)
+		brew.Bean, err = ResolveBeanRefWithRoaster(ctx, client, beanRef, sessionID)
 		if err != nil {
 			return fmt.Errorf("failed to resolve bean reference: %w", err)
-		}
-
-		// If bean has a roaster reference, resolve it too
-		if brew.Bean != nil && brew.Bean.RoasterRKey != "" {
-			// Note: We need to get the roasterRef from the bean record
-			// This requires storing the raw record data or fetching it again
-			// For now, we'll skip nested resolution and handle it in store.go
 		}
 	}
 
