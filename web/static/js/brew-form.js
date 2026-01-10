@@ -33,7 +33,7 @@ function brewForm() {
                 }
             }
             
-            // Populate dropdowns from cache
+            // Populate dropdowns from cache using stale-while-revalidate pattern
             await this.loadDropdownData();
         },
         
@@ -43,21 +43,36 @@ function brewForm() {
                 return;
             }
             
-            try {
-                const data = await window.ArabicaCache.getData();
-                if (data) {
-                    this.beans = data.beans || [];
-                    this.grinders = data.grinders || [];
-                    this.brewers = data.brewers || [];
-                    this.roasters = data.roasters || [];
-                    this.dataLoaded = true;
-                    
-                    // Populate the select elements
-                    this.populateDropdowns();
-                }
-            } catch (e) {
-                console.error('Failed to load dropdown data:', e);
+            // First, try to immediately populate from cached data (sync)
+            // This prevents flickering by showing data instantly
+            const cachedData = window.ArabicaCache.getCachedData();
+            if (cachedData) {
+                this.applyData(cachedData);
             }
+            
+            // Then refresh in background if cache is stale
+            if (!window.ArabicaCache.isCacheValid()) {
+                try {
+                    const freshData = await window.ArabicaCache.refreshCache();
+                    if (freshData) {
+                        this.applyData(freshData);
+                    }
+                } catch (e) {
+                    console.error('Failed to refresh dropdown data:', e);
+                    // We already have cached data displayed, so this is non-fatal
+                }
+            }
+        },
+        
+        applyData(data) {
+            this.beans = data.beans || [];
+            this.grinders = data.grinders || [];
+            this.brewers = data.brewers || [];
+            this.roasters = data.roasters || [];
+            this.dataLoaded = true;
+            
+            // Populate the select elements
+            this.populateDropdowns();
         },
         
         populateDropdowns() {

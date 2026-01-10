@@ -353,7 +353,7 @@ func (h *Handler) HandleBrewExport(w http.ResponseWriter, r *http.Request) {
 	encoder.Encode(brews)
 }
 
-// API endpoint to list all user data (beans, roasters, grinders, brewers)
+// API endpoint to list all user data (beans, roasters, grinders, brewers, brews)
 // Used by client-side cache for faster page loads
 func (h *Handler) HandleAPIListAll(w http.ResponseWriter, r *http.Request) {
 	store, authenticated := h.getAtprotoStore(r)
@@ -368,11 +368,12 @@ func (h *Handler) HandleAPIListAll(w http.ResponseWriter, r *http.Request) {
 		roasters []*models.Roaster
 		grinders []*models.Grinder
 		brewers  []*models.Brewer
+		brews    []*models.Brew
 		err      error
 		which    string
 	}
 
-	results := make(chan result, 4)
+	results := make(chan result, 5)
 
 	go func() {
 		beans, err := store.ListBeans()
@@ -390,13 +391,18 @@ func (h *Handler) HandleAPIListAll(w http.ResponseWriter, r *http.Request) {
 		brewers, err := store.ListBrewers()
 		results <- result{brewers: brewers, err: err, which: "brewers"}
 	}()
+	go func() {
+		brews, err := store.ListBrews(1) // User ID not used with atproto
+		results <- result{brews: brews, err: err, which: "brews"}
+	}()
 
 	var beans []*models.Bean
 	var roasters []*models.Roaster
 	var grinders []*models.Grinder
 	var brewers []*models.Brewer
+	var brews []*models.Brew
 
-	for i := 0; i < 4; i++ {
+	for i := 0; i < 5; i++ {
 		res := <-results
 		if res.err != nil {
 			http.Error(w, res.err.Error(), http.StatusInternalServerError)
@@ -411,6 +417,8 @@ func (h *Handler) HandleAPIListAll(w http.ResponseWriter, r *http.Request) {
 			grinders = res.grinders
 		case "brewers":
 			brewers = res.brewers
+		case "brews":
+			brews = res.brews
 		}
 	}
 
@@ -422,6 +430,7 @@ func (h *Handler) HandleAPIListAll(w http.ResponseWriter, r *http.Request) {
 		"roasters": roasters,
 		"grinders": grinders,
 		"brewers":  brewers,
+		"brews":    brews,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
