@@ -2,6 +2,10 @@
 {{if .IsOwnProfile}}
 <!-- Load manage page JavaScript before Alpine.js processes the page -->
 <script src="/static/js/manage-page.js"></script>
+{{end}}
+<!-- Load profile stats updater -->
+<script src="/static/js/profile-stats.js"></script>
+{{if .IsOwnProfile}}
 <div class="max-w-4xl mx-auto" x-data="managePage()">
 {{else}}
 <div class="max-w-4xl mx-auto">
@@ -35,23 +39,23 @@
     <!-- Stats (load immediately with placeholder values) -->
     <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
         <div class="bg-gradient-to-br from-brown-100 to-brown-200 rounded-lg shadow-md p-4 text-center border border-brown-300">
-            <div class="text-2xl font-bold text-brown-800">-</div>
+            <div class="text-2xl font-bold text-brown-800" data-stat="brews">-</div>
             <div class="text-sm text-brown-700">Brews</div>
         </div>
         <div class="bg-gradient-to-br from-brown-100 to-brown-200 rounded-lg shadow-md p-4 text-center border border-brown-300">
-            <div class="text-2xl font-bold text-brown-800">-</div>
+            <div class="text-2xl font-bold text-brown-800" data-stat="beans">-</div>
             <div class="text-sm text-brown-700">Beans</div>
         </div>
         <div class="bg-gradient-to-br from-brown-100 to-brown-200 rounded-lg shadow-md p-4 text-center border border-brown-300">
-            <div class="text-2xl font-bold text-brown-800">-</div>
+            <div class="text-2xl font-bold text-brown-800" data-stat="roasters">-</div>
             <div class="text-sm text-brown-700">Roasters</div>
         </div>
         <div class="bg-gradient-to-br from-brown-100 to-brown-200 rounded-lg shadow-md p-4 text-center border border-brown-300">
-            <div class="text-2xl font-bold text-brown-800">-</div>
+            <div class="text-2xl font-bold text-brown-800" data-stat="grinders">-</div>
             <div class="text-sm text-brown-700">Grinders</div>
         </div>
         <div class="bg-gradient-to-br from-brown-100 to-brown-200 rounded-lg shadow-md p-4 text-center border border-brown-300">
-            <div class="text-2xl font-bold text-brown-800">-</div>
+            <div class="text-2xl font-bold text-brown-800" data-stat="brewers">-</div>
             <div class="text-sm text-brown-700">Brewers</div>
         </div>
     </div>
@@ -83,7 +87,7 @@
         </div>
 
         <!-- Tab content loaded via HTMX -->
-        <div hx-get="/api/profile/{{.Profile.Handle}}" hx-trigger="load" hx-swap="innerHTML">
+        <div id="profile-content" hx-get="/api/profile/{{.Profile.Handle}}" hx-trigger="load" hx-swap="innerHTML">
             <!-- Loading skeleton -->
             <div class="animate-pulse">
                 <!-- Brews Tab Skeleton -->

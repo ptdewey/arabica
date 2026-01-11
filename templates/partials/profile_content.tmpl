@@ -1,4 +1,13 @@
 {{define "profile_content"}}
+<!-- Stats data to be read by JavaScript -->
+<div id="profile-stats-data" 
+     data-brews="{{len .Brews}}" 
+     data-beans="{{len .Beans}}" 
+     data-roasters="{{len .Roasters}}" 
+     data-grinders="{{len .Grinders}}" 
+     data-brewers="{{len .Brewers}}"
+     style="display: none;"></div>
+
 <!-- Brews Tab -->
 <div x-show="activeTab === 'brews'">
     {{template "brew_list_content" .}}
