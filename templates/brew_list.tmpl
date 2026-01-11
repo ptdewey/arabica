@@ -1,17 +1,11 @@
 {{define "content"}}
 <div class="max-w-6xl mx-auto">
-    <div class="mb-6">
-        <h2 class="text-3xl font-bold text-brown-900 mb-4">Your Brews</h2>
-        <div class="flex flex-col sm:flex-row gap-4">
-            <a href="/brews/new"
-                class="bg-gradient-to-r from-brown-700 to-brown-800 text-white py-2 px-4 rounded-lg hover:from-brown-800 hover:to-brown-900 transition-all text-center font-medium shadow-lg hover:shadow-xl">
-                ☕ New Brew
-            </a>
-            <a href="/brews/export"
-                class="bg-gradient-to-r from-brown-500 to-brown-600 text-white py-2 px-4 rounded-lg hover:from-brown-600 hover:to-brown-700 transition-all text-center font-medium shadow-lg hover:shadow-xl">
-                📥 Export JSON
-            </a>
-        </div>
+    <div class="mb-6 flex items-center justify-between">
+        <h2 class="text-3xl font-bold text-brown-900">Your Brews</h2>
+        <a href="/brews/new"
+            class="bg-gradient-to-r from-brown-700 to-brown-800 text-white py-2 px-4 rounded-lg hover:from-brown-800 hover:to-brown-900 transition-all font-medium shadow-lg hover:shadow-xl">
+            + New Brew
+        </a>
     </div>
 
     <div hx-get="/api/brews" hx-trigger="load" hx-swap="innerHTML">
