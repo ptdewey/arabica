@@ -3,7 +3,9 @@ package atproto
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -17,6 +19,73 @@ const (
 	// PLCDirectoryURL is the PLC directory for resolving DIDs
 	PLCDirectoryURL = "https://plc.directory"
 )
+
+// ErrSSRFBlocked is returned when a potential SSRF attack is blocked
+var ErrSSRFBlocked = errors.New("request blocked: potential SSRF detected")
+
+// isPrivateIP checks if an IP address is in a private/internal range
+func isPrivateIP(ip net.IP) bool {
+	if ip == nil {
+		return false
+	}
+
+	// Check for loopback
+	if ip.IsLoopback() {
+		return true
+	}
+
+	// Check for link-local
+	if ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() {
+		return true
+	}
+
+	// Check for private ranges
+	if ip.IsPrivate() {
+		return true
+	}
+
+	// Check for unspecified (0.0.0.0)
+	if ip.IsUnspecified() {
+		return true
+	}
+
+	// Check for cloud metadata endpoint (169.254.169.254)
+	if ip.Equal(net.ParseIP("169.254.169.254")) {
+		return true
+	}
+
+	return false
+}
+
+// validateDomain checks if a domain is safe to connect to (not internal/private)
+func validateDomain(domain string) error {
+	// Block obviously dangerous patterns
+	if domain == "localhost" || strings.HasSuffix(domain, ".local") {
+		return ErrSSRFBlocked
+	}
+
+	// Check for IP addresses embedded in the domain
+	if ip := net.ParseIP(domain); ip != nil {
+		if isPrivateIP(ip) {
+			return ErrSSRFBlocked
+		}
+	}
+
+	// Resolve the domain and check all IPs
+	ips, err := net.LookupIP(domain)
+	if err != nil {
+		// If we can't resolve it, let the HTTP request fail later
+		return nil
+	}
+
+	for _, ip := range ips {
+		if isPrivateIP(ip) {
+			return ErrSSRFBlocked
+		}
+	}
+
+	return nil
+}
 
 // PublicClient provides unauthenticated access to public ATProto APIs
 type PublicClient struct {
@@ -89,7 +158,25 @@ func (c *PublicClient) GetPDSEndpoint(ctx context.Context, did string) (string, 
 		}
 	} else if strings.HasPrefix(did, "did:web:") {
 		// Web DID - the domain is the PDS
+		// Validate domain to prevent SSRF attacks
 		domain := strings.TrimPrefix(did, "did:web:")
+		// Handle percent-encoded colons for ports (e.g., did:web:example.com%3A8080)
+		domain = strings.ReplaceAll(domain, "%3A", ":")
+
+		// Extract just the host part (without path)
+		if idx := strings.Index(domain, "/"); idx != -1 {
+			domain = domain[:idx]
+		}
+
+		// Validate the domain is safe
+		host := domain
+		if hostPart, _, err := net.SplitHostPort(domain); err == nil {
+			host = hostPart
+		}
+		if err := validateDomain(host); err != nil {
+			return "", err
+		}
+
 		pdsEndpoint = "https://" + domain
 	}
 

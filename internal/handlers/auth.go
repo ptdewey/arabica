@@ -160,7 +160,8 @@ func (h *Handler) HandleClientMetadata(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(metadata); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Error().Err(err).Msg("Failed to encode client metadata")
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 		return
 	}
 }

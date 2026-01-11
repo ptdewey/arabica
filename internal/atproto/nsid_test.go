@@ -1,6 +1,7 @@
 package atproto
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -27,6 +28,51 @@ func TestNSIDConstants(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.got != tt.expected {
 				t.Errorf("%s = %q, want %q", tt.name, tt.got, tt.expected)
+			}
+		})
+	}
+}
+
+func TestValidateRKey(t *testing.T) {
+	tests := []struct {
+		name  string
+		rkey  string
+		valid bool
+	}{
+		// Valid rkeys
+		{"TID format", "3kfk4slgu6s2h", true},
+		{"short alphanumeric", "abc123", true},
+		{"single char", "a", true},
+		{"with hyphen", "my-record", true},
+		{"with underscore", "my_record", true},
+		{"with period", "my.record", true},
+		{"with colon", "my:record", true},
+		{"mixed valid chars", "a1-b2_c3.d4:e5", true},
+		{"uppercase", "ABC123", true},
+		{"mixed case", "AbC123xYz", true},
+
+		// Invalid rkeys
+		{"empty string", "", false},
+		{"starts with hyphen", "-abc", false},
+		{"starts with underscore", "_abc", false},
+		{"starts with period", ".abc", false},
+		{"starts with colon", ":abc", false},
+		{"reserved dot", ".", false},
+		{"reserved dotdot", "..", false},
+		{"contains slash", "abc/def", false},
+		{"contains space", "abc def", false},
+		{"contains at", "abc@def", false},
+		{"contains hash", "abc#def", false},
+		{"contains question", "abc?def", false},
+		{"too long", strings.Repeat("a", 513), false},
+		{"max length valid", strings.Repeat("a", 512), true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := ValidateRKey(tt.rkey)
+			if got != tt.valid {
+				t.Errorf("ValidateRKey(%q) = %v, want %v", tt.rkey, got, tt.valid)
 			}
 		})
 	}

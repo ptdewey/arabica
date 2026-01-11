@@ -1,6 +1,37 @@
 package models
 
-import "time"
+import (
+	"errors"
+	"time"
+)
+
+// Field length limits for validation
+const (
+	MaxNameLength        = 200
+	MaxLocationLength    = 200
+	MaxWebsiteLength     = 500
+	MaxDescriptionLength = 2000
+	MaxNotesLength       = 2000
+	MaxOriginLength      = 200
+	MaxRoastLevelLength  = 100
+	MaxProcessLength     = 100
+	MaxMethodLength      = 100
+	MaxGrindSizeLength   = 100
+	MaxGrinderTypeLength = 50
+	MaxBurrTypeLength    = 50
+)
+
+// Validation errors
+var (
+	ErrNameRequired    = errors.New("name is required")
+	ErrNameTooLong     = errors.New("name is too long")
+	ErrLocationTooLong = errors.New("location is too long")
+	ErrWebsiteTooLong  = errors.New("website is too long")
+	ErrDescTooLong     = errors.New("description is too long")
+	ErrNotesTooLong    = errors.New("notes is too long")
+	ErrOriginTooLong   = errors.New("origin is too long")
+	ErrFieldTooLong    = errors.New("field value is too long")
+)
 
 type Bean struct {
 	RKey        string    `json:"rkey"` // Record key (AT Protocol or stringified ID for SQLite)
@@ -141,4 +172,152 @@ type UpdateGrinderRequest struct {
 type UpdateBrewerRequest struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
+}
+
+// Validate checks that all fields are within acceptable limits
+func (r *CreateBeanRequest) Validate() error {
+	if r.Name == "" {
+		return ErrNameRequired
+	}
+	if len(r.Name) > MaxNameLength {
+		return ErrNameTooLong
+	}
+	if len(r.Origin) > MaxOriginLength {
+		return ErrOriginTooLong
+	}
+	if len(r.RoastLevel) > MaxRoastLevelLength {
+		return ErrFieldTooLong
+	}
+	if len(r.Process) > MaxProcessLength {
+		return ErrFieldTooLong
+	}
+	if len(r.Description) > MaxDescriptionLength {
+		return ErrDescTooLong
+	}
+	return nil
+}
+
+// Validate checks that all fields are within acceptable limits
+func (r *UpdateBeanRequest) Validate() error {
+	if r.Name == "" {
+		return ErrNameRequired
+	}
+	if len(r.Name) > MaxNameLength {
+		return ErrNameTooLong
+	}
+	if len(r.Origin) > MaxOriginLength {
+		return ErrOriginTooLong
+	}
+	if len(r.RoastLevel) > MaxRoastLevelLength {
+		return ErrFieldTooLong
+	}
+	if len(r.Process) > MaxProcessLength {
+		return ErrFieldTooLong
+	}
+	if len(r.Description) > MaxDescriptionLength {
+		return ErrDescTooLong
+	}
+	return nil
+}
+
+// Validate checks that all fields are within acceptable limits
+func (r *CreateRoasterRequest) Validate() error {
+	if r.Name == "" {
+		return ErrNameRequired
+	}
+	if len(r.Name) > MaxNameLength {
+		return ErrNameTooLong
+	}
+	if len(r.Location) > MaxLocationLength {
+		return ErrLocationTooLong
+	}
+	if len(r.Website) > MaxWebsiteLength {
+		return ErrWebsiteTooLong
+	}
+	return nil
+}
+
+// Validate checks that all fields are within acceptable limits
+func (r *UpdateRoasterRequest) Validate() error {
+	if r.Name == "" {
+		return ErrNameRequired
+	}
+	if len(r.Name) > MaxNameLength {
+		return ErrNameTooLong
+	}
+	if len(r.Location) > MaxLocationLength {
+		return ErrLocationTooLong
+	}
+	if len(r.Website) > MaxWebsiteLength {
+		return ErrWebsiteTooLong
+	}
+	return nil
+}
+
+// Validate checks that all fields are within acceptable limits
+func (r *CreateGrinderRequest) Validate() error {
+	if r.Name == "" {
+		return ErrNameRequired
+	}
+	if len(r.Name) > MaxNameLength {
+		return ErrNameTooLong
+	}
+	if len(r.GrinderType) > MaxGrinderTypeLength {
+		return ErrFieldTooLong
+	}
+	if len(r.BurrType) > MaxBurrTypeLength {
+		return ErrFieldTooLong
+	}
+	if len(r.Notes) > MaxNotesLength {
+		return ErrNotesTooLong
+	}
+	return nil
+}
+
+// Validate checks that all fields are within acceptable limits
+func (r *UpdateGrinderRequest) Validate() error {
+	if r.Name == "" {
+		return ErrNameRequired
+	}
+	if len(r.Name) > MaxNameLength {
+		return ErrNameTooLong
+	}
+	if len(r.GrinderType) > MaxGrinderTypeLength {
+		return ErrFieldTooLong
+	}
+	if len(r.BurrType) > MaxBurrTypeLength {
+		return ErrFieldTooLong
+	}
+	if len(r.Notes) > MaxNotesLength {
+		return ErrNotesTooLong
+	}
+	return nil
+}
+
+// Validate checks that all fields are within acceptable limits
+func (r *CreateBrewerRequest) Validate() error {
+	if r.Name == "" {
+		return ErrNameRequired
+	}
+	if len(r.Name) > MaxNameLength {
+		return ErrNameTooLong
+	}
+	if len(r.Description) > MaxDescriptionLength {
+		return ErrDescTooLong
+	}
+	return nil
+}
+
+// Validate checks that all fields are within acceptable limits
+func (r *UpdateBrewerRequest) Validate() error {
+	if r.Name == "" {
+		return ErrNameRequired
+	}
+	if len(r.Name) > MaxNameLength {
+		return ErrNameTooLong
+	}
+	if len(r.Description) > MaxDescriptionLength {
+		return ErrDescTooLong
+	}
+	return nil
 }

@@ -55,6 +55,32 @@ func NewHandler(
 	}
 }
 
+// validateRKey validates and returns an rkey from a path parameter.
+// Returns the rkey if valid, or writes an error response and returns empty string if invalid.
+func validateRKey(w http.ResponseWriter, rkey string) string {
+	if rkey == "" {
+		http.Error(w, "Record key is required", http.StatusBadRequest)
+		return ""
+	}
+	if !atproto.ValidateRKey(rkey) {
+		http.Error(w, "Invalid record key format", http.StatusBadRequest)
+		return ""
+	}
+	return rkey
+}
+
+// validateOptionalRKey validates an optional rkey from form data.
+// Returns an error message if invalid, empty string if valid or empty.
+func validateOptionalRKey(rkey, fieldName string) string {
+	if rkey == "" {
+		return ""
+	}
+	if !atproto.ValidateRKey(rkey) {
+		return fieldName + " has invalid format"
+	}
+	return ""
+}
+
 // getAtprotoStore creates a user-scoped atproto store from the request context.
 // Returns the store and true if authenticated, or nil and false if not authenticated.
 func (h *Handler) getAtprotoStore(r *http.Request) (database.Store, bool) {
@@ -224,7 +250,10 @@ func (h *Handler) HandleBrewNew(w http.ResponseWriter, r *http.Request) {
 
 // Show edit brew form
 func (h *Handler) HandleBrewEdit(w http.ResponseWriter, r *http.Request) {
-	rkey := r.PathValue("id") // URL still uses "id" path param but value is now rkey
+	rkey := validateRKey(w, r.PathValue("id"))
+	if rkey == "" {
+		return
+	}
 
 	// Require authentication
 	store, authenticated := h.getAtprotoStore(r)
@@ -379,6 +408,22 @@ func (h *Handler) HandleBrewCreate(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bean selection is required", http.StatusBadRequest)
 		return
 	}
+	if !atproto.ValidateRKey(beanRKey) {
+		http.Error(w, "Invalid bean selection", http.StatusBadRequest)
+		return
+	}
+
+	// Validate optional rkeys
+	grinderRKey := r.FormValue("grinder_rkey")
+	if errMsg := validateOptionalRKey(grinderRKey, "Grinder selection"); errMsg != "" {
+		http.Error(w, errMsg, http.StatusBadRequest)
+		return
+	}
+	brewerRKey := r.FormValue("brewer_rkey")
+	if errMsg := validateOptionalRKey(brewerRKey, "Brewer selection"); errMsg != "" {
+		http.Error(w, errMsg, http.StatusBadRequest)
+		return
+	}
 
 	req := &models.CreateBrewRequest{
 		BeanRKey:     beanRKey,
@@ -388,8 +433,8 @@ func (h *Handler) HandleBrewCreate(w http.ResponseWriter, r *http.Request) {
 		CoffeeAmount: coffeeAmount,
 		TimeSeconds:  timeSeconds,
 		GrindSize:    r.FormValue("grind_size"),
-		GrinderRKey:  r.FormValue("grinder_rkey"),
-		BrewerRKey:   r.FormValue("brewer_rkey"),
+		GrinderRKey:  grinderRKey,
+		BrewerRKey:   brewerRKey,
 		TastingNotes: r.FormValue("tasting_notes"),
 		Rating:       rating,
 		Pours:        pours,
@@ -409,7 +454,10 @@ func (h *Handler) HandleBrewCreate(w http.ResponseWriter, r *http.Request) {
 
 // Update existing brew
 func (h *Handler) HandleBrewUpdate(w http.ResponseWriter, r *http.Request) {
-	rkey := r.PathValue("id") // URL still uses "id" path param but value is now rkey
+	rkey := validateRKey(w, r.PathValue("id"))
+	if rkey == "" {
+		return
+	}
 
 	// Require authentication
 	store, authenticated := h.getAtprotoStore(r)
@@ -436,6 +484,22 @@ func (h *Handler) HandleBrewUpdate(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bean selection is required", http.StatusBadRequest)
 		return
 	}
+	if !atproto.ValidateRKey(beanRKey) {
+		http.Error(w, "Invalid bean selection", http.StatusBadRequest)
+		return
+	}
+
+	// Validate optional rkeys
+	grinderRKey := r.FormValue("grinder_rkey")
+	if errMsg := validateOptionalRKey(grinderRKey, "Grinder selection"); errMsg != "" {
+		http.Error(w, errMsg, http.StatusBadRequest)
+		return
+	}
+	brewerRKey := r.FormValue("brewer_rkey")
+	if errMsg := validateOptionalRKey(brewerRKey, "Brewer selection"); errMsg != "" {
+		http.Error(w, errMsg, http.StatusBadRequest)
+		return
+	}
 
 	req := &models.CreateBrewRequest{
 		BeanRKey:     beanRKey,
@@ -445,8 +509,8 @@ func (h *Handler) HandleBrewUpdate(w http.ResponseWriter, r *http.Request) {
 		CoffeeAmount: coffeeAmount,
 		TimeSeconds:  timeSeconds,
 		GrindSize:    r.FormValue("grind_size"),
-		GrinderRKey:  r.FormValue("grinder_rkey"),
-		BrewerRKey:   r.FormValue("brewer_rkey"),
+		GrinderRKey:  grinderRKey,
+		BrewerRKey:   brewerRKey,
 		TastingNotes: r.FormValue("tasting_notes"),
 		Rating:       rating,
 		Pours:        pours,
@@ -466,7 +530,10 @@ func (h *Handler) HandleBrewUpdate(w http.ResponseWriter, r *http.Request) {
 
 // Delete brew
 func (h *Handler) HandleBrewDelete(w http.ResponseWriter, r *http.Request) {
-	rkey := r.PathValue("id") // URL still uses "id" path param but value is now rkey
+	rkey := validateRKey(w, r.PathValue("id"))
+	if rkey == "" {
+		return
+	}
 
 	// Require authentication
 	store, authenticated := h.getAtprotoStore(r)
@@ -594,9 +661,15 @@ func (h *Handler) HandleBeanCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate required fields
-	if req.Name == "" {
-		http.Error(w, "Bean name is required", http.StatusBadRequest)
+	// Validate request
+	if err := req.Validate(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Validate optional roaster rkey
+	if errMsg := validateOptionalRKey(req.RoasterRKey, "Roaster selection"); errMsg != "" {
+		http.Error(w, errMsg, http.StatusBadRequest)
 		return
 	}
 
@@ -628,9 +701,9 @@ func (h *Handler) HandleRoasterCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate required fields
-	if req.Name == "" {
-		http.Error(w, "Roaster name is required", http.StatusBadRequest)
+	// Validate request
+	if err := req.Validate(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -667,7 +740,10 @@ func (h *Handler) HandleManage(w http.ResponseWriter, r *http.Request) {
 
 // Bean update/delete handlers
 func (h *Handler) HandleBeanUpdate(w http.ResponseWriter, r *http.Request) {
-	rkey := r.PathValue("id") // URL still uses "id" path param but value is now rkey
+	rkey := validateRKey(w, r.PathValue("id"))
+	if rkey == "" {
+		return
+	}
 
 	// Require authentication
 	store, authenticated := h.getAtprotoStore(r)
@@ -682,9 +758,15 @@ func (h *Handler) HandleBeanUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate required fields
-	if req.Name == "" {
-		http.Error(w, "Bean name is required", http.StatusBadRequest)
+	// Validate request
+	if err := req.Validate(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Validate optional roaster rkey
+	if errMsg := validateOptionalRKey(req.RoasterRKey, "Roaster selection"); errMsg != "" {
+		http.Error(w, errMsg, http.StatusBadRequest)
 		return
 	}
 
@@ -708,7 +790,10 @@ func (h *Handler) HandleBeanUpdate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) HandleBeanDelete(w http.ResponseWriter, r *http.Request) {
-	rkey := r.PathValue("id") // URL still uses "id" path param but value is now rkey
+	rkey := validateRKey(w, r.PathValue("id"))
+	if rkey == "" {
+		return
+	}
 
 	// Require authentication
 	store, authenticated := h.getAtprotoStore(r)
@@ -728,7 +813,10 @@ func (h *Handler) HandleBeanDelete(w http.ResponseWriter, r *http.Request) {
 
 // Roaster update/delete handlers
 func (h *Handler) HandleRoasterUpdate(w http.ResponseWriter, r *http.Request) {
-	rkey := r.PathValue("id") // URL still uses "id" path param but value is now rkey
+	rkey := validateRKey(w, r.PathValue("id"))
+	if rkey == "" {
+		return
+	}
 
 	// Require authentication
 	store, authenticated := h.getAtprotoStore(r)
@@ -743,9 +831,9 @@ func (h *Handler) HandleRoasterUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate required fields
-	if req.Name == "" {
-		http.Error(w, "Roaster name is required", http.StatusBadRequest)
+	// Validate request
+	if err := req.Validate(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -769,7 +857,10 @@ func (h *Handler) HandleRoasterUpdate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) HandleRoasterDelete(w http.ResponseWriter, r *http.Request) {
-	rkey := r.PathValue("id") // URL still uses "id" path param but value is now rkey
+	rkey := validateRKey(w, r.PathValue("id"))
+	if rkey == "" {
+		return
+	}
 
 	// Require authentication
 	store, authenticated := h.getAtprotoStore(r)
@@ -802,9 +893,9 @@ func (h *Handler) HandleGrinderCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate required fields
-	if req.Name == "" {
-		http.Error(w, "Grinder name is required", http.StatusBadRequest)
+	// Validate request
+	if err := req.Validate(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -822,7 +913,10 @@ func (h *Handler) HandleGrinderCreate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) HandleGrinderUpdate(w http.ResponseWriter, r *http.Request) {
-	rkey := r.PathValue("id") // URL still uses "id" path param but value is now rkey
+	rkey := validateRKey(w, r.PathValue("id"))
+	if rkey == "" {
+		return
+	}
 
 	// Require authentication
 	store, authenticated := h.getAtprotoStore(r)
@@ -837,9 +931,9 @@ func (h *Handler) HandleGrinderUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate required fields
-	if req.Name == "" {
-		http.Error(w, "Grinder name is required", http.StatusBadRequest)
+	// Validate request
+	if err := req.Validate(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -863,7 +957,10 @@ func (h *Handler) HandleGrinderUpdate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) HandleGrinderDelete(w http.ResponseWriter, r *http.Request) {
-	rkey := r.PathValue("id") // URL still uses "id" path param but value is now rkey
+	rkey := validateRKey(w, r.PathValue("id"))
+	if rkey == "" {
+		return
+	}
 
 	// Require authentication
 	store, authenticated := h.getAtprotoStore(r)
@@ -896,9 +993,9 @@ func (h *Handler) HandleBrewerCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate required fields
-	if req.Name == "" {
-		http.Error(w, "Brewer name is required", http.StatusBadRequest)
+	// Validate request
+	if err := req.Validate(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -916,7 +1013,10 @@ func (h *Handler) HandleBrewerCreate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) HandleBrewerUpdate(w http.ResponseWriter, r *http.Request) {
-	rkey := r.PathValue("id") // URL still uses "id" path param but value is now rkey
+	rkey := validateRKey(w, r.PathValue("id"))
+	if rkey == "" {
+		return
+	}
 
 	// Require authentication
 	store, authenticated := h.getAtprotoStore(r)
@@ -931,9 +1031,9 @@ func (h *Handler) HandleBrewerUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate required fields
-	if req.Name == "" {
-		http.Error(w, "Brewer name is required", http.StatusBadRequest)
+	// Validate request
+	if err := req.Validate(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -957,7 +1057,10 @@ func (h *Handler) HandleBrewerUpdate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) HandleBrewerDelete(w http.ResponseWriter, r *http.Request) {
-	rkey := r.PathValue("id") // URL still uses "id" path param but value is now rkey
+	rkey := validateRKey(w, r.PathValue("id"))
+	if rkey == "" {
+		return
+	}
 
 	// Require authentication
 	store, authenticated := h.getAtprotoStore(r)

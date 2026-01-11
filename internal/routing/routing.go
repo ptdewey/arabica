@@ -86,11 +86,23 @@ func SetupRouter(cfg Config) http.Handler {
 	// Catch-all 404 handler - must be last, catches any unmatched routes
 	mux.HandleFunc("/", h.HandleNotFound)
 
-	// Apply middleware in order (last added is executed first)
-	// 1. Apply OAuth middleware to add auth context to all requests
-	handler := cfg.OAuthManager.AuthMiddleware(mux)
+	// Apply middleware in order (outermost first, innermost last)
+	var handler http.Handler = mux
 
-	// 2. Apply logging middleware (wraps everything)
+	// 1. Limit request body size (innermost - runs first on request)
+	handler = middleware.LimitBodyMiddleware(handler)
+
+	// 2. Apply OAuth middleware to add auth context
+	handler = cfg.OAuthManager.AuthMiddleware(handler)
+
+	// 3. Apply rate limiting
+	rateLimitConfig := middleware.NewDefaultRateLimitConfig()
+	handler = middleware.RateLimitMiddleware(rateLimitConfig)(handler)
+
+	// 4. Apply security headers
+	handler = middleware.SecurityHeadersMiddleware(handler)
+
+	// 5. Apply logging middleware (outermost - wraps everything)
 	handler = middleware.LoggingMiddleware(cfg.Logger)(handler)
 
 	return handler
