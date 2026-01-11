@@ -2,8 +2,8 @@
 <script src="/static/js/brew-form.js"></script>
 
 <div class="max-w-2xl mx-auto">
-    <div class="bg-white rounded-lg shadow-md p-8">
-        <h2 class="text-3xl font-bold text-gray-800 mb-6">
+    <div class="bg-gradient-to-br from-brown-100 to-brown-200 rounded-xl shadow-xl p-8 border border-brown-300">
+        <h2 class="text-3xl font-bold text-brown-900 mb-6">
             {{if .Brew}}Edit Brew{{else}}New Brew{{end}}
         </h2>
         
@@ -22,12 +22,12 @@
             
             <!-- Bean Selection -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Coffee Bean</label>
+                <label class="block text-sm font-medium text-brown-900 mb-2">Coffee Bean</label>
                 <div class="flex gap-2">
                     <select 
                         name="bean_rkey" 
                         required
-                        class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4 truncate max-w-full">
+                        class="flex-1 rounded-lg border-2 border-brown-300 shadow-sm focus:border-brown-600 focus:ring-brown-600 text-base py-3 px-4 truncate max-w-full bg-white">
                         <option value="">Select a bean...</option>
                         {{if .Beans}}
                         {{range .Beans}}
@@ -46,7 +46,7 @@
                     <button 
                         type="button"
                         @click="showNewBean = true"
-                        class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">
+                        class="bg-brown-300 text-brown-900 px-4 py-2 rounded-lg hover:bg-brown-400 font-medium transition-colors">
                         + New
                     </button>
                 </div>
@@ -56,24 +56,24 @@
             
             <!-- Coffee Amount -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Coffee Amount (grams)</label>
+                <label class="block text-sm font-medium text-brown-900 mb-2">Coffee Amount (grams)</label>
                 <input 
                     type="number" 
                     name="coffee_amount" 
                     step="0.1"
                     {{if and .Brew (gt .Brew.CoffeeAmount 0)}}value="{{.Brew.CoffeeAmount}}"{{end}}
                     placeholder="e.g. 18"
-                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4"/>
-                <p class="text-sm text-gray-500 mt-1">Amount of ground coffee used</p>
+                    class="w-full rounded-lg border-2 border-brown-300 shadow-sm focus:border-brown-600 focus:ring-brown-600 text-base py-3 px-4 bg-white"/>
+                <p class="text-sm text-brown-700 mt-1">Amount of ground coffee used</p>
             </div>
             
             <!-- Grinder -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Grinder</label>
+                <label class="block text-sm font-medium text-brown-900 mb-2">Grinder</label>
                 <div class="flex gap-2">
                     <select 
                         name="grinder_rkey"
-                        class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4 truncate max-w-full">
+                        class="flex-1 rounded-lg border-2 border-brown-300 shadow-sm focus:border-brown-600 focus:ring-brown-600 text-base py-3 px-4 truncate max-w-full bg-white">
                         <option value="">Select a grinder...</option>
                         {{if .Grinders}}
                         {{range .Grinders}}
@@ -92,7 +92,7 @@
                     <button 
                         type="button"
                         @click="showNewGrinder = true"
-                        class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">
+                        class="bg-brown-300 text-brown-900 px-4 py-2 rounded-lg hover:bg-brown-400 font-medium transition-colors">
                         + New
                     </button>
                 </div>
@@ -102,23 +102,23 @@
         
             <!-- Grind Size -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Grind Size</label>
+                <label class="block text-sm font-medium text-brown-900 mb-2">Grind Size</label>
                 <input 
                     type="text" 
                     name="grind_size" 
                     {{if .Brew}}value="{{.Brew.GrindSize}}"{{end}}
                     placeholder="e.g. 18, Medium, 3.5, Fine"
-                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4"/>
-                <p class="text-sm text-gray-500 mt-1">Enter a number (grinder setting) or description (e.g. "Medium", "Fine")</p>
+                    class="w-full rounded-lg border-2 border-brown-300 shadow-sm focus:border-brown-600 focus:ring-brown-600 text-base py-3 px-4 bg-white"/>
+                <p class="text-sm text-brown-700 mt-1">Enter a number (grinder setting) or description (e.g. "Medium", "Fine")</p>
             </div>
             
             <!-- Brew Method -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Brew Method</label>
+                <label class="block text-sm font-medium text-brown-900 mb-2">Brew Method</label>
                 <div class="flex gap-2">
                     <select 
                         name="brewer_rkey"
-                        class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4 truncate max-w-full">
+                        class="flex-1 rounded-lg border-2 border-brown-300 shadow-sm focus:border-brown-600 focus:ring-brown-600 text-base py-3 px-4 truncate max-w-full bg-white">
                         <option value="">Select brew method...</option>
                         {{if .Brewers}}
                         {{range .Brewers}}
@@ -137,7 +137,7 @@
                     <button 
                         type="button"
                         @click="showNewBrewer = true"
-                        class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">
+                        class="bg-brown-300 text-brown-900 px-4 py-2 rounded-lg hover:bg-brown-400 font-medium transition-colors">
                         + New
                     </button>
                 </div>
@@ -147,55 +147,55 @@
             
             <!-- Water Amount -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Water Amount (grams)</label>
+                <label class="block text-sm font-medium text-brown-900 mb-2">Water Amount (grams)</label>
                 <input 
                     type="number" 
                     name="water_amount" 
                     step="1"
                     {{if and .Brew (gt .Brew.WaterAmount 0)}}value="{{.Brew.WaterAmount}}"{{end}}
                     placeholder="e.g. 250"
-                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4"/>
-                <p class="text-sm text-gray-500 mt-1">Total water used (or leave empty if using pours below)</p>
+                    class="w-full rounded-lg border-2 border-brown-300 shadow-sm focus:border-brown-600 focus:ring-brown-600 text-base py-3 px-4 bg-white"/>
+                <p class="text-sm text-brown-700 mt-1">Total water used (or leave empty if using pours below)</p>
             </div>
         
             <!-- Pours Section -->
             <div>
                 <div class="flex items-center justify-between mb-2">
-                    <label class="block text-sm font-medium text-gray-700">Pours (Optional)</label>
+                    <label class="block text-sm font-medium text-brown-900">Pours (Optional)</label>
                     <button 
                         type="button"
                         @click="addPour()"
-                        class="text-sm bg-gray-200 text-gray-700 px-3 py-1 rounded hover:bg-gray-300">
+                        class="text-sm bg-brown-300 text-brown-900 px-3 py-1 rounded-lg hover:bg-brown-400 font-medium transition-colors">
                         + Add Pour
                     </button>
                 </div>
-                <p class="text-sm text-gray-500 mb-3">Track individual pours for bloom and subsequent additions</p>
+                <p class="text-sm text-brown-700 mb-3">Track individual pours for bloom and subsequent additions</p>
                 
                 <div class="space-y-3">
                     <template x-for="(pour, index) in pours" :key="index">
-                        <div class="flex gap-2 items-center bg-gray-50 p-3 rounded">
+                        <div class="flex gap-2 items-center bg-brown-50 p-3 rounded-lg border border-brown-200">
                             <div class="flex-1">
-                                <label class="text-xs text-gray-600" x-text="'Pour ' + (index + 1)"></label>
+                                <label class="text-xs text-brown-700 font-medium" x-text="'Pour ' + (index + 1)"></label>
                                 <input 
                                     type="number"
                                     :name="'pour_water_' + index"
                                     x-model="pour.water"
                                     placeholder="Water (g)"
-                                    class="w-full rounded-md border-gray-300 text-sm py-2 px-3 mt-1"/>
+                                    class="w-full rounded-md border-brown-300 text-sm py-2 px-3 mt-1 bg-white"/>
                             </div>
                             <div class="flex-1">
-                                <label class="text-xs text-gray-600">Time (sec)</label>
+                                <label class="text-xs text-brown-700 font-medium">Time (sec)</label>
                                 <input 
                                     type="number"
                                     :name="'pour_time_' + index"
                                     x-model="pour.time"
                                     placeholder="e.g. 45"
-                                    class="w-full rounded-md border-gray-300 text-sm py-2 px-3 mt-1"/>
+                                    class="w-full rounded-md border-brown-300 text-sm py-2 px-3 mt-1 bg-white"/>
                             </div>
                             <button 
                                 type="button"
                                 @click="removePour(index)"
-                                class="text-red-600 hover:text-red-800 mt-5"
+                                class="text-brown-700 hover:text-brown-900 mt-5 font-bold"
                                 x-show="pours.length > 0">
                                 ✕
                             </button>
@@ -206,40 +206,40 @@
         
             <!-- Temperature -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Temperature</label>
+                <label class="block text-sm font-medium text-brown-900 mb-2">Temperature</label>
                 <input 
                     type="number" 
                     name="temperature" 
                     step="0.1"
                     {{if and .Brew (gt .Brew.Temperature 0.0)}}value="{{printf "%.1f" .Brew.Temperature}}"{{end}}
                     placeholder="e.g. 93.5"
-                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4"/>
+                    class="w-full rounded-lg border-2 border-brown-300 shadow-sm focus:border-brown-600 focus:ring-brown-600 text-base py-3 px-4 bg-white"/>
             </div>
             
             <!-- Brew Time -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Brew Time (seconds)</label>
+                <label class="block text-sm font-medium text-brown-900 mb-2">Brew Time (seconds)</label>
                 <input 
                     type="number" 
                     name="time_seconds" 
                     {{if and .Brew (gt .Brew.TimeSeconds 0)}}value="{{.Brew.TimeSeconds}}"{{end}}
                     placeholder="e.g. 180"
-                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4"/>
+                    class="w-full rounded-lg border-2 border-brown-300 shadow-sm focus:border-brown-600 focus:ring-brown-600 text-base py-3 px-4 bg-white"/>
             </div>
             
             <!-- Tasting Notes -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Tasting Notes</label>
+                <label class="block text-sm font-medium text-brown-900 mb-2">Tasting Notes</label>
                 <textarea 
                     name="tasting_notes" 
                     rows="4"
                     placeholder="Describe the flavors, aroma, and your thoughts..."
-                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 text-base py-3 px-4">{{if .Brew}}{{.Brew.TastingNotes}}{{end}}</textarea>
+                    class="w-full rounded-lg border-2 border-brown-300 shadow-sm focus:border-brown-600 focus:ring-brown-600 text-base py-3 px-4 bg-white">{{if .Brew}}{{.Brew.TastingNotes}}{{end}}</textarea>
             </div>
             
             <!-- Rating -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+                <label class="block text-sm font-medium text-brown-900 mb-2">Rating</label>
                 <input 
                     type="range" 
                     name="rating" 
@@ -248,8 +248,8 @@
                     {{if .Brew}}value="{{.Brew.Rating}}"{{else}}value="5"{{end}}
                     x-model="rating"
                     x-init="rating = $el.value"
-                    class="w-full"/>
-                <div class="text-center text-2xl font-bold text-brown-600">
+                    class="w-full accent-brown-700"/>
+                <div class="text-center text-2xl font-bold text-brown-800">
                     <span x-text="rating"></span>/10
                 </div>
             </div>
@@ -258,7 +258,7 @@
             <div>
                 <button 
                     type="submit"
-                    class="w-full bg-brown-600 text-white py-3 px-6 rounded-lg hover:bg-brown-700 transition font-medium text-lg">
+                    class="w-full bg-gradient-to-r from-brown-700 to-brown-800 text-white py-3 px-6 rounded-xl hover:from-brown-800 hover:to-brown-900 transition-all font-semibold text-lg shadow-lg hover:shadow-xl">
                     {{if .Brew}}Update Brew{{else}}Save Brew{{end}}
                 </button>
             </div>

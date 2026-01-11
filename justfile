@@ -8,4 +8,5 @@ test:
     @go test ./... -cover -coverprofile=cover.out
 
 style:
-    @tailwindcss -i web/static/css/style.css -o web/static/css/output.css --minify
+    @nix develop --command tailwindcss -i web/static/css/style.css -o web/static/css/output.css --minify
+    # @tailwindcss -i web/static/css/style.css -o web/static/css/output.css --minify

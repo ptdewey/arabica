@@ -2,52 +2,52 @@
 <!-- Beans Tab -->
 <div x-show="tab === 'beans'">
     <div class="mb-4 flex justify-between items-center">
-        <h3 class="text-xl font-semibold">Coffee Beans</h3>
+        <h3 class="text-xl font-semibold text-brown-900">Coffee Beans</h3>
         <button
             @click="showBeanForm = true; editingBean = null; beanForm = {name: '', origin: '', roast_level: '', process: '', description: '', roaster_rkey: ''}"
-            class="bg-brown-600 text-white px-4 py-2 rounded hover:bg-brown-700">
+            class="bg-gradient-to-r from-brown-700 to-brown-800 text-white px-4 py-2 rounded-lg hover:from-brown-800 hover:to-brown-900 transition-all font-medium shadow-md hover:shadow-lg">
             + Add Bean
         </button>
     </div>
 
     {{if not .Beans}}
-    <div class="bg-gray-50 rounded-lg p-8 text-center text-gray-600">
+    <div class="bg-brown-100 rounded-lg p-8 text-center text-brown-700 border border-brown-200">
         No beans yet. Add your first bean to get started!
     </div>
     {{else}}
-    <div class="bg-white shadow-md rounded-lg overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+    <div class="bg-gradient-to-br from-brown-100 to-brown-200 shadow-xl rounded-xl overflow-x-auto border border-brown-300">
+        <table class="min-w-full divide-y divide-brown-300">
+            <thead class="bg-brown-200/80">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Origin</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Roaster</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Roast Level</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Process</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-brown-900 uppercase">Name</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-brown-900 uppercase">Origin</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-brown-900 uppercase">Roaster</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-brown-900 uppercase">Roast Level</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-brown-900 uppercase">Process</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-brown-900 uppercase">Description</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-brown-900 uppercase">Actions</th>
                 </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
+            <tbody class="bg-brown-50/60 divide-y divide-brown-200">
                 {{range .Beans}}
-                <tr>
-                    <td class="px-6 py-4 text-sm font-medium text-gray-900">{{.Name}}</td>
-                    <td class="px-6 py-4 text-sm text-gray-900">{{.Origin}}</td>
-                    <td class="px-6 py-4 text-sm text-gray-900">
+                <tr class="hover:bg-brown-100/60 transition-colors">
+                    <td class="px-6 py-4 text-sm font-medium text-brown-900">{{.Name}}</td>
+                    <td class="px-6 py-4 text-sm text-brown-900">{{.Origin}}</td>
+                    <td class="px-6 py-4 text-sm text-brown-900">
                         {{if and .Roaster .Roaster.Name}}
                         {{.Roaster.Name}}
                         {{else}}
-                        <span class="text-gray-400">-</span>
+                        <span class="text-brown-400">-</span>
                         {{end}}
                     </td>
-                    <td class="px-6 py-4 text-sm text-gray-900">{{.RoastLevel}}</td>
-                    <td class="px-6 py-4 text-sm text-gray-900">{{.Process}}</td>
-                    <td class="px-6 py-4 text-sm text-gray-500">{{.Description}}</td>
+                    <td class="px-6 py-4 text-sm text-brown-900">{{.RoastLevel}}</td>
+                    <td class="px-6 py-4 text-sm text-brown-900">{{.Process}}</td>
+                    <td class="px-6 py-4 text-sm text-brown-700">{{.Description}}</td>
                     <td class="px-6 py-4 text-sm font-medium space-x-2">
                         <button @click="editBean('{{.RKey}}', '{{.Name}}', '{{.Origin}}', '{{.RoastLevel}}', '{{.Process}}', '{{.Description}}', '{{.RoasterRKey}}')"
-                            class="text-blue-600 hover:text-blue-900">Edit</button>
+                            class="text-brown-700 hover:text-brown-900 font-medium">Edit</button>
                         <button @click="deleteBean('{{.RKey}}')"
-                            class="text-red-600 hover:text-red-900">Delete</button>
+                            class="text-brown-600 hover:text-brown-800 font-medium">Delete</button>
                     </td>
                 </tr>
                 {{end}}
@@ -60,45 +60,45 @@
 <!-- Roasters Tab -->
 <div x-show="tab === 'roasters'">
     <div class="mb-4 flex justify-between items-center">
-        <h3 class="text-xl font-semibold">Roasters</h3>
+        <h3 class="text-xl font-semibold text-brown-900">Roasters</h3>
         <button
             @click="showRoasterForm = true; editingRoaster = null; roasterForm = {name: '', location: '', website: ''}"
-            class="bg-brown-600 text-white px-4 py-2 rounded hover:bg-brown-700">
+            class="bg-gradient-to-r from-brown-700 to-brown-800 text-white px-4 py-2 rounded-lg hover:from-brown-800 hover:to-brown-900 transition-all font-medium shadow-md hover:shadow-lg">
             + Add Roaster
         </button>
     </div>
 
     {{if not .Roasters}}
-    <div class="bg-gray-50 rounded-lg p-8 text-center text-gray-600">
+    <div class="bg-brown-100 rounded-lg p-8 text-center text-brown-700 border border-brown-200">
         No roasters yet. Add your first roaster!
     </div>
     {{else}}
-    <div class="bg-white shadow-md rounded-lg overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+    <div class="bg-gradient-to-br from-brown-100 to-brown-200 shadow-xl rounded-xl overflow-x-auto border border-brown-300">
+        <table class="min-w-full divide-y divide-brown-300">
+            <thead class="bg-brown-200/80">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Website</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-brown-900 uppercase">Name</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-brown-900 uppercase">Location</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-brown-900 uppercase">Website</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-brown-900 uppercase">Actions</th>
                 </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
+            <tbody class="bg-brown-50/60 divide-y divide-brown-200">
                 {{range .Roasters}}
-                <tr>
-                    <td class="px-6 py-4 text-sm font-medium text-gray-900">{{.Name}}</td>
-                    <td class="px-6 py-4 text-sm text-gray-900">{{.Location}}</td>
-                    <td class="px-6 py-4 text-sm text-gray-900">
+                <tr class="hover:bg-brown-100/60 transition-colors">
+                    <td class="px-6 py-4 text-sm font-medium text-brown-900">{{.Name}}</td>
+                    <td class="px-6 py-4 text-sm text-brown-900">{{.Location}}</td>
+                    <td class="px-6 py-4 text-sm text-brown-900">
                         {{if .Website}}
                         <a href="{{.Website}}" target="_blank"
-                            class="text-blue-600 hover:underline">{{.Website}}</a>
+                            class="text-brown-700 hover:underline font-medium">{{.Website}}</a>
                         {{end}}
                     </td>
                     <td class="px-6 py-4 text-sm font-medium space-x-2">
                         <button @click="editRoaster('{{.RKey}}', '{{.Name}}', '{{.Location}}', '{{.Website}}')"
-                            class="text-blue-600 hover:text-blue-900">Edit</button>
+                            class="text-brown-700 hover:text-brown-900 font-medium">Edit</button>
                         <button @click="deleteRoaster('{{.RKey}}')"
-                            class="text-red-600 hover:text-red-900">Delete</button>
+                            class="text-brown-600 hover:text-brown-800 font-medium">Delete</button>
                     </td>
                 </tr>
                 {{end}}
@@ -111,42 +111,42 @@
 <!-- Grinders Tab -->
 <div x-show="tab === 'grinders'">
     <div class="mb-4 flex justify-between items-center">
-        <h3 class="text-xl font-semibold">Grinders</h3>
+        <h3 class="text-xl font-semibold text-brown-900">Grinders</h3>
         <button
         @click="showGrinderForm = true; editingGrinder = null; grinderForm = {name: '', grinder_type: '', burr_type: '', notes: ''}"
-            class="bg-brown-600 text-white px-4 py-2 rounded hover:bg-brown-700">
+            class="bg-gradient-to-r from-brown-700 to-brown-800 text-white px-4 py-2 rounded-lg hover:from-brown-800 hover:to-brown-900 transition-all font-medium shadow-md hover:shadow-lg">
             + Add Grinder
         </button>
     </div>
 
     {{if not .Grinders}}
-    <div class="bg-gray-50 rounded-lg p-8 text-center text-gray-600">
+    <div class="bg-brown-100 rounded-lg p-8 text-center text-brown-700 border border-brown-200">
         No grinders yet. Add your first grinder!
     </div>
     {{else}}
-    <div class="bg-white shadow-md rounded-lg overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+    <div class="bg-gradient-to-br from-brown-100 to-brown-200 shadow-xl rounded-xl overflow-x-auto border border-brown-300">
+        <table class="min-w-full divide-y divide-brown-300">
+            <thead class="bg-brown-200/80">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Grinder Type</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Burr Type</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Notes</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-brown-900 uppercase">Name</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-brown-900 uppercase">Grinder Type</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-brown-900 uppercase">Burr Type</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-brown-900 uppercase">Notes</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-brown-900 uppercase">Actions</th>
                 </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
+            <tbody class="bg-brown-50/60 divide-y divide-brown-200">
                 {{range .Grinders}}
-                <tr>
-                    <td class="px-6 py-4 text-sm font-medium text-gray-900">{{.Name}}</td>
-                    <td class="px-6 py-4 text-sm text-gray-900">{{.GrinderType}}</td>
-                    <td class="px-6 py-4 text-sm text-gray-900">{{.BurrType}}</td>
-                    <td class="px-6 py-4 text-sm text-gray-500">{{.Notes}}</td>
+                <tr class="hover:bg-brown-100/60 transition-colors">
+                    <td class="px-6 py-4 text-sm font-medium text-brown-900">{{.Name}}</td>
+                    <td class="px-6 py-4 text-sm text-brown-900">{{.GrinderType}}</td>
+                    <td class="px-6 py-4 text-sm text-brown-900">{{.BurrType}}</td>
+                    <td class="px-6 py-4 text-sm text-brown-700">{{.Notes}}</td>
                     <td class="px-6 py-4 text-sm font-medium space-x-2">
                         <button @click="editGrinder('{{.RKey}}', '{{.Name}}', '{{.GrinderType}}', '{{.BurrType}}', '{{.Notes}}')"
-                            class="text-blue-600 hover:text-blue-900">Edit</button>
+                            class="text-brown-700 hover:text-brown-900 font-medium">Edit</button>
                         <button @click="deleteGrinder('{{.RKey}}')"
-                            class="text-red-600 hover:text-red-900">Delete</button>
+                            class="text-brown-600 hover:text-brown-800 font-medium">Delete</button>
                     </td>
                 </tr>
                 {{end}}
@@ -159,37 +159,37 @@
 <!-- Brewers Tab -->
 <div x-show="tab === 'brewers'">
     <div class="mb-4 flex justify-between items-center">
-        <h3 class="text-xl font-semibold">Brewers</h3>
+        <h3 class="text-xl font-semibold text-brown-900">Brewers</h3>
         <button @click="showBrewerForm = true; editingBrewer = null; brewerForm = {name: '', description: ''}"
-            class="bg-brown-600 text-white px-4 py-2 rounded hover:bg-brown-700">
+            class="bg-gradient-to-r from-brown-700 to-brown-800 text-white px-4 py-2 rounded-lg hover:from-brown-800 hover:to-brown-900 transition-all font-medium shadow-md hover:shadow-lg">
             + Add Brewer
         </button>
     </div>
 
     {{if not .Brewers}}
-    <div class="bg-gray-50 rounded-lg p-8 text-center text-gray-600">
+    <div class="bg-brown-100 rounded-lg p-8 text-center text-brown-700 border border-brown-200">
         No brewers yet. Add your first brewer!
     </div>
     {{else}}
-    <div class="bg-white shadow-md rounded-lg overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+    <div class="bg-gradient-to-br from-brown-100 to-brown-200 shadow-xl rounded-xl overflow-x-auto border border-brown-300">
+        <table class="min-w-full divide-y divide-brown-300">
+            <thead class="bg-brown-200/80">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-brown-900 uppercase">Name</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-brown-900 uppercase">Description</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-brown-900 uppercase">Actions</th>
                 </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
+            <tbody class="bg-brown-50/60 divide-y divide-brown-200">
                 {{range .Brewers}}
-                <tr>
-                    <td class="px-6 py-4 text-sm font-medium text-gray-900">{{.Name}}</td>
-                    <td class="px-6 py-4 text-sm text-gray-500">{{.Description}}</td>
+                <tr class="hover:bg-brown-100/60 transition-colors">
+                    <td class="px-6 py-4 text-sm font-medium text-brown-900">{{.Name}}</td>
+                    <td class="px-6 py-4 text-sm text-brown-700">{{.Description}}</td>
                     <td class="px-6 py-4 text-sm font-medium space-x-2">
                         <button @click="editBrewer('{{.RKey}}', '{{.Name}}', '{{.Description}}')"
-                            class="text-blue-600 hover:text-blue-900">Edit</button>
+                            class="text-brown-700 hover:text-brown-900 font-medium">Edit</button>
                         <button @click="deleteBrewer('{{.RKey}}')"
-                            class="text-red-600 hover:text-red-900">Delete</button>
+                            class="text-brown-600 hover:text-brown-800 font-medium">Delete</button>
                     </td>
                 </tr>
                 {{end}}
@@ -200,21 +200,21 @@
 </div>
 
 <!-- Bean Form Modal -->
-<div x-cloak x-show="showBeanForm" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-    <div class="bg-brown-100 rounded-lg border border-brown-300 p-8 max-w-md w-full mx-4">
-        <h3 class="text-xl font-semibold mb-4 text-gray-800" x-text="editingBean ? 'Edit Bean' : 'Add Bean'"></h3>
+<div x-cloak x-show="showBeanForm" class="fixed inset-0 bg-brown-900/75 flex items-center justify-center z-50">
+    <div class="bg-gradient-to-br from-brown-100 to-brown-200 rounded-xl border-2 border-brown-300 p-8 max-w-md w-full mx-4 shadow-2xl">
+        <h3 class="text-xl font-semibold mb-4 text-brown-900" x-text="editingBean ? 'Edit Bean' : 'Add Bean'"></h3>
         <div class="space-y-4">
             <input type="text" x-model="beanForm.name" placeholder="Name *"
-                class="w-full rounded-md border-gray-300 bg-white shadow-sm py-2 px-3" />
+                class="w-full rounded-lg border-2 border-brown-300 bg-white shadow-sm py-2 px-3 focus:border-brown-600 focus:ring-brown-600" />
             <input type="text" x-model="beanForm.origin" placeholder="Origin *"
-                class="w-full rounded-md border-gray-300 bg-white shadow-sm py-2 px-3" />
-            <select x-model="beanForm.roaster_rkey" class="w-full rounded-md border-gray-300 bg-white shadow-sm py-2 px-3">
+                class="w-full rounded-lg border-2 border-brown-300 bg-white shadow-sm py-2 px-3 focus:border-brown-600 focus:ring-brown-600" />
+            <select x-model="beanForm.roaster_rkey" class="w-full rounded-lg border-2 border-brown-300 bg-white shadow-sm py-2 px-3 focus:border-brown-600 focus:ring-brown-600">
                 <option value="">Select Roaster (Optional)</option>
                 {{range .Roasters}}
                 <option value="{{.RKey}}">{{.Name}}</option>
                 {{end}}
             </select>
-            <select x-model="beanForm.roast_level" class="w-full rounded-md border-gray-300 bg-white shadow-sm py-2 px-3">
+            <select x-model="beanForm.roast_level" class="w-full rounded-lg border-2 border-brown-300 bg-white shadow-sm py-2 px-3 focus:border-brown-600 focus:ring-brown-600">
                 <option value="">Select Roast Level (Optional)</option>
                 <option value="Ultra-Light">Ultra-Light</option>
                 <option value="Light">Light</option>
@@ -224,84 +224,84 @@
                 <option value="Dark">Dark</option>
             </select>
             <input type="text" x-model="beanForm.process" placeholder="Process (e.g. Washed, Natural, Honey)"
-                class="w-full rounded-md border-gray-300 bg-white shadow-sm py-2 px-3" />
+                class="w-full rounded-lg border-2 border-brown-300 bg-white shadow-sm py-2 px-3 focus:border-brown-600 focus:ring-brown-600" />
             <textarea x-model="beanForm.description" placeholder="Description" rows="3"
-                class="w-full rounded-md border-gray-300 bg-white shadow-sm py-2 px-3"></textarea>
+                class="w-full rounded-lg border-2 border-brown-300 bg-white shadow-sm py-2 px-3 focus:border-brown-600 focus:ring-brown-600"></textarea>
             <div class="flex gap-2">
                 <button @click="saveBean()"
-                    class="flex-1 bg-brown-600 text-white px-4 py-2 rounded hover:bg-brown-700">Save</button>
+                    class="flex-1 bg-gradient-to-r from-brown-700 to-brown-800 text-white px-4 py-2 rounded-lg hover:from-brown-800 hover:to-brown-900 font-medium transition-all shadow-md">Save</button>
                 <button @click="showBeanForm = false"
-                    class="flex-1 bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>
+                    class="flex-1 bg-brown-300 text-brown-900 px-4 py-2 rounded-lg hover:bg-brown-400 font-medium transition-colors">Cancel</button>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Roaster Form Modal -->
-<div x-cloak x-show="showRoasterForm" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-    <div class="bg-brown-100 rounded-lg border border-brown-300 p-8 max-w-md w-full mx-4">
-        <h3 class="text-xl font-semibold mb-4 text-gray-800" x-text="editingRoaster ? 'Edit Roaster' : 'Add Roaster'"></h3>
+<div x-cloak x-show="showRoasterForm" class="fixed inset-0 bg-brown-900/75 flex items-center justify-center z-50">
+    <div class="bg-gradient-to-br from-brown-100 to-brown-200 rounded-xl border-2 border-brown-300 p-8 max-w-md w-full mx-4 shadow-2xl">
+        <h3 class="text-xl font-semibold mb-4 text-brown-900" x-text="editingRoaster ? 'Edit Roaster' : 'Add Roaster'"></h3>
         <div class="space-y-4">
             <input type="text" x-model="roasterForm.name" placeholder="Name *"
-                class="w-full rounded-md border-gray-300 bg-white shadow-sm py-2 px-3" />
+                class="w-full rounded-lg border-2 border-brown-300 bg-white shadow-sm py-2 px-3 focus:border-brown-600 focus:ring-brown-600" />
             <input type="text" x-model="roasterForm.location" placeholder="Location"
-                class="w-full rounded-md border-gray-300 bg-white shadow-sm py-2 px-3" />
+                class="w-full rounded-lg border-2 border-brown-300 bg-white shadow-sm py-2 px-3 focus:border-brown-600 focus:ring-brown-600" />
             <input type="url" x-model="roasterForm.website" placeholder="Website"
-                class="w-full rounded-md border-gray-300 bg-white shadow-sm py-2 px-3" />
+                class="w-full rounded-lg border-2 border-brown-300 bg-white shadow-sm py-2 px-3 focus:border-brown-600 focus:ring-brown-600" />
             <div class="flex gap-2">
                 <button @click="saveRoaster()"
-                    class="flex-1 bg-brown-600 text-white px-4 py-2 rounded hover:bg-brown-700">Save</button>
+                    class="flex-1 bg-gradient-to-r from-brown-700 to-brown-800 text-white px-4 py-2 rounded-lg hover:from-brown-800 hover:to-brown-900 font-medium transition-all shadow-md">Save</button>
                 <button @click="showRoasterForm = false"
-                    class="flex-1 bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>
+                    class="flex-1 bg-brown-300 text-brown-900 px-4 py-2 rounded-lg hover:bg-brown-400 font-medium transition-colors">Cancel</button>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Grinder Form Modal -->
-<div x-cloak x-show="showGrinderForm" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-    <div class="bg-brown-100 rounded-lg border border-brown-300 p-8 max-w-md w-full mx-4">
-        <h3 class="text-xl font-semibold mb-4 text-gray-800" x-text="editingGrinder ? 'Edit Grinder' : 'Add Grinder'"></h3>
+<div x-cloak x-show="showGrinderForm" class="fixed inset-0 bg-brown-900/75 flex items-center justify-center z-50">
+    <div class="bg-gradient-to-br from-brown-100 to-brown-200 rounded-xl border-2 border-brown-300 p-8 max-w-md w-full mx-4 shadow-2xl">
+        <h3 class="text-xl font-semibold mb-4 text-brown-900" x-text="editingGrinder ? 'Edit Grinder' : 'Add Grinder'"></h3>
         <div class="space-y-4">
             <input type="text" x-model="grinderForm.name" placeholder="Name *"
-                class="w-full rounded-md border-gray-300 bg-white shadow-sm py-2 px-3" />
-            <select x-model="grinderForm.grinder_type" class="w-full rounded-md border-gray-300 bg-white shadow-sm py-2 px-3">
+                class="w-full rounded-lg border-2 border-brown-300 bg-white shadow-sm py-2 px-3 focus:border-brown-600 focus:ring-brown-600" />
+            <select x-model="grinderForm.grinder_type" class="w-full rounded-lg border-2 border-brown-300 bg-white shadow-sm py-2 px-3 focus:border-brown-600 focus:ring-brown-600">
                 <option value="">Select Grinder Type *</option>
                 <option value="Hand">Hand</option>
                 <option value="Electric">Electric</option>
                 <option value="Portable Electric">Portable Electric</option>
             </select>
-            <select x-model="grinderForm.burr_type" class="w-full rounded-md border-gray-300 bg-white shadow-sm py-2 px-3">
+            <select x-model="grinderForm.burr_type" class="w-full rounded-lg border-2 border-brown-300 bg-white shadow-sm py-2 px-3 focus:border-brown-600 focus:ring-brown-600">
                 <option value="">Select Burr Type (Optional)</option>
                 <option value="Conical">Conical</option>
                 <option value="Flat">Flat</option>
             </select>
             <textarea x-model="grinderForm.notes" placeholder="Notes" rows="3"
-                class="w-full rounded-md border-gray-300 bg-white shadow-sm py-2 px-3"></textarea>
+                class="w-full rounded-lg border-2 border-brown-300 bg-white shadow-sm py-2 px-3 focus:border-brown-600 focus:ring-brown-600"></textarea>
             <div class="flex gap-2">
                 <button @click="saveGrinder()"
-                    class="flex-1 bg-brown-600 text-white px-4 py-2 rounded hover:bg-brown-700">Save</button>
+                    class="flex-1 bg-gradient-to-r from-brown-700 to-brown-800 text-white px-4 py-2 rounded-lg hover:from-brown-800 hover:to-brown-900 font-medium transition-all shadow-md">Save</button>
                 <button @click="showGrinderForm = false"
-                    class="flex-1 bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>
+                    class="flex-1 bg-brown-300 text-brown-900 px-4 py-2 rounded-lg hover:bg-brown-400 font-medium transition-colors">Cancel</button>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Brewer Form Modal -->
-<div x-cloak x-show="showBrewerForm" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-    <div class="bg-brown-100 rounded-lg border border-brown-300 p-8 max-w-md w-full mx-4">
-        <h3 class="text-xl font-semibold mb-4 text-gray-800" x-text="editingBrewer ? 'Edit Brewer' : 'Add Brewer'"></h3>
+<div x-cloak x-show="showBrewerForm" class="fixed inset-0 bg-brown-900/75 flex items-center justify-center z-50">
+    <div class="bg-gradient-to-br from-brown-100 to-brown-200 rounded-xl border-2 border-brown-300 p-8 max-w-md w-full mx-4 shadow-2xl">
+        <h3 class="text-xl font-semibold mb-4 text-brown-900" x-text="editingBrewer ? 'Edit Brewer' : 'Add Brewer'"></h3>
         <div class="space-y-4">
             <input type="text" x-model="brewerForm.name" placeholder="Name *"
-                class="w-full rounded-md border-gray-300 bg-white shadow-sm py-2 px-3" />
+                class="w-full rounded-lg border-2 border-brown-300 bg-white shadow-sm py-2 px-3 focus:border-brown-600 focus:ring-brown-600" />
             <textarea x-model="brewerForm.description" placeholder="Description" rows="3"
-                class="w-full rounded-md border-gray-300 bg-white shadow-sm py-2 px-3"></textarea>
+                class="w-full rounded-lg border-2 border-brown-300 bg-white shadow-sm py-2 px-3 focus:border-brown-600 focus:ring-brown-600"></textarea>
             <div class="flex gap-2">
                 <button @click="saveBrewer()"
-                    class="flex-1 bg-brown-600 text-white px-4 py-2 rounded hover:bg-brown-700">Save</button>
+                    class="flex-1 bg-gradient-to-r from-brown-700 to-brown-800 text-white px-4 py-2 rounded-lg hover:from-brown-800 hover:to-brown-900 font-medium transition-all shadow-md">Save</button>
                 <button @click="showBrewerForm = false"
-                    class="flex-1 bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>
+                    class="flex-1 bg-brown-300 text-brown-900 px-4 py-2 rounded-lg hover:bg-brown-400 font-medium transition-colors">Cancel</button>
             </div>
         </div>
     </div>

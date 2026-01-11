@@ -7,7 +7,10 @@
     <meta name="description" content="Arabica - Coffee brew tracker" />
     <meta name="theme-color" content="#4a2c2a" />
     <title>{{.Title}} - Arabica</title>
-    <link rel="stylesheet" href="/static/css/output.css?v=0.1.4" />
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/static/favicon-32.svg" type="image/svg+xml" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/static/icon-192.svg" />
+    <link rel="stylesheet" href="/static/css/output.css?v=0.1.6" />
     <style>[x-cloak] { display: none !important; }</style>
     <link rel="manifest" href="/static/manifest.json" />
     <!-- Alpine.js - Using standard build due to CDN MIME type issues with CSP build -->
@@ -21,20 +24,20 @@
     {{end}}
     <script src="/static/js/sw-register.js"></script>
 </head>
-<body class="bg-gray-50 min-h-full flex flex-col">
-    <nav class="bg-brown-800 text-white shadow-lg">
+<body class="bg-brown-50 min-h-full flex flex-col">
+    <nav class="bg-gradient-to-br from-brown-800 to-brown-900 text-white shadow-xl border-b-2 border-brown-600">
         <div class="container mx-auto px-4 py-4">
             <div class="flex items-center justify-between">
                 <a href="/" class="hidden md:flex items-center gap-2 hover:opacity-80 transition">
                     <h1 class="text-2xl font-bold">☕ Arabica</h1>
-                    <span class="text-xs bg-yellow-500 text-brown-900 px-2 py-1 rounded font-semibold">ALPHA</span>
+                    <span class="text-xs bg-amber-400 text-brown-900 px-2 py-1 rounded-md font-semibold shadow-sm">ALPHA</span>
                 </a>
                 <div class="space-x-4">
-                    <a href="/" class="hover:text-brown-200">Home</a>
+                    <a href="/" class="hover:text-brown-100 transition-colors font-medium">Home</a>
                     {{if .IsAuthenticated}}
-                    <a href="/brews" class="hover:text-brown-200">Brews</a>
-                    <a href="/brews/new" class="hover:text-brown-200">New Brew</a>
-                    <a href="/manage" class="hover:text-brown-200">Manage</a>
+                    <a href="/brews" class="hover:text-brown-100 transition-colors font-medium">Brews</a>
+                    <a href="/brews/new" class="hover:text-brown-100 transition-colors font-medium">New Brew</a>
+                    <a href="/manage" class="hover:text-brown-100 transition-colors font-medium">Manage</a>
                     {{end}}
                 </div>
             </div>

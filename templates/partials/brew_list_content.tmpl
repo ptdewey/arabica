@@ -1,73 +1,73 @@
 {{define "brew_list_content"}}
 {{if not .Brews}}
-<div class="bg-white rounded-lg shadow-md p-8 text-center">
-    <p class="text-gray-600 text-lg mb-4">No brews yet! Start tracking your coffee journey.</p>
+<div class="bg-gradient-to-br from-brown-100 to-brown-200 rounded-xl shadow-xl p-8 text-center border border-brown-300">
+    <p class="text-brown-800 text-lg mb-4 font-medium">No brews yet! Start tracking your coffee journey.</p>
     <a href="/brews/new"
-        class="inline-block bg-brown-600 text-white py-3 px-6 rounded-lg hover:bg-brown-700 transition">
+        class="inline-block bg-gradient-to-r from-brown-700 to-brown-800 text-white py-3 px-6 rounded-lg hover:from-brown-800 hover:to-brown-900 transition-all shadow-lg hover:shadow-xl font-medium">
         Add Your First Brew
     </a>
 </div>
 {{else}}
-<div class="overflow-x-auto bg-white rounded-lg shadow-md">
-    <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
+<div class="overflow-x-auto bg-gradient-to-br from-brown-100 to-brown-200 rounded-xl shadow-xl border border-brown-300">
+    <table class="min-w-full divide-y divide-brown-300">
+        <thead class="bg-brown-200/80">
             <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bean</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roaster</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rating</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-brown-900 uppercase tracking-wider">Date</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-brown-900 uppercase tracking-wider">Bean</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-brown-900 uppercase tracking-wider">Roaster</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-brown-900 uppercase tracking-wider">Method</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-brown-900 uppercase tracking-wider">Rating</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-brown-900 uppercase tracking-wider">Actions</th>
             </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
+        <tbody class="bg-brown-50/60 divide-y divide-brown-200">
             {{range .Brews}}
-            <tr class="hover:bg-gray-50">
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            <tr class="hover:bg-brown-100/60 transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-brown-900 font-medium">
                     {{.CreatedAt.Format "Jan 2, 2006"}}
                 </td>
-                <td class="px-6 py-4 text-sm text-gray-900">
+                <td class="px-6 py-4 text-sm text-brown-900">
                     {{if .Bean}}
                     {{if .Bean.Name}}
-                    <div class="font-medium">{{.Bean.Name}}</div>
-                    <div class="text-gray-500 text-xs">{{.Bean.Origin}} - {{.Bean.RoastLevel}}</div>
+                    <div class="font-medium text-brown-900">{{.Bean.Name}}</div>
+                    <div class="text-brown-600 text-xs">{{.Bean.Origin}} - {{.Bean.RoastLevel}}</div>
                     {{else}}
-                    <div class="font-medium">{{.Bean.Origin}}</div>
-                    <div class="text-gray-500">{{.Bean.RoastLevel}}</div>
+                    <div class="font-medium text-brown-900">{{.Bean.Origin}}</div>
+                    <div class="text-brown-600">{{.Bean.RoastLevel}}</div>
                     {{end}}
                     {{else}}
-                    <span class="text-gray-400">-</span>
+                    <span class="text-brown-400">-</span>
                     {{end}}
                 </td>
-                <td class="px-6 py-4 text-sm text-gray-900">
+                <td class="px-6 py-4 text-sm text-brown-900">
                     {{if and .Bean .Bean.Roaster .Bean.Roaster.Name}}
                     {{.Bean.Roaster.Name}}
                     {{else}}
-                    <span class="text-gray-400">-</span>
+                    <span class="text-brown-400">-</span>
                     {{end}}
                 </td>
-                <td class="px-6 py-4 text-sm text-gray-900">
-                    <div>{{.Method}}</div>
-                    <div class="text-gray-500 text-xs">
+                <td class="px-6 py-4 text-sm text-brown-900">
+                    <div class="font-medium">{{.Method}}</div>
+                    <div class="text-brown-600 text-xs">
                         {{.TempFormatted}} • {{.TimeFormatted}}
                     </div>
                     {{if .Pours}}
-                    <div class="text-gray-500 text-xs mt-1">
+                    <div class="text-brown-600 text-xs mt-1">
                         {{len .Pours}} pours
                     </div>
                     {{end}}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-brown-900">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-900">
                         ⭐ {{.RatingFormatted}}
                     </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                     <a href="/brews/{{.RKey}}"
-                        class="text-blue-600 hover:text-blue-900">View</a>
+                        class="text-brown-700 hover:text-brown-900 font-medium">View</a>
                     <button hx-delete="/brews/{{.RKey}}"
                         hx-confirm="Are you sure you want to delete this brew?" hx-target="closest tr"
-                        hx-swap="outerHTML swap:1s" class="text-red-600 hover:text-red-900">
+                        hx-swap="outerHTML swap:1s" class="text-brown-600 hover:text-brown-800 font-medium">
                         Delete
                     </button>
                 </td>

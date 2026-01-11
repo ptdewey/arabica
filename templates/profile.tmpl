@@ -1,75 +1,75 @@
 {{define "content"}}
 <div class="max-w-4xl mx-auto">
     <!-- Profile Header -->
-    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+    <div class="bg-gradient-to-br from-brown-100 to-brown-200 rounded-xl shadow-xl p-6 mb-6 border border-brown-300">
         <div class="flex items-center gap-4">
             {{if .Profile.Avatar}}
             {{$safeAvatar := safeAvatarURL .Profile.Avatar}}
             {{if $safeAvatar}}
-            <img src="{{$safeAvatar}}" alt="" class="w-20 h-20 rounded-full object-cover" />
+            <img src="{{$safeAvatar}}" alt="" class="w-20 h-20 rounded-full object-cover border-2 border-brown-300" />
             {{else}}
-            <div class="w-20 h-20 rounded-full bg-gray-300 flex items-center justify-center">
-                <span class="text-gray-500 text-2xl">?</span>
+            <div class="w-20 h-20 rounded-full bg-brown-300 flex items-center justify-center">
+                <span class="text-brown-600 text-2xl">?</span>
             </div>
             {{end}}
             {{else}}
-            <div class="w-20 h-20 rounded-full bg-gray-300 flex items-center justify-center">
-                <span class="text-gray-500 text-2xl">?</span>
+            <div class="w-20 h-20 rounded-full bg-brown-300 flex items-center justify-center">
+                <span class="text-brown-600 text-2xl">?</span>
             </div>
             {{end}}
             <div>
                 {{if .Profile.DisplayName}}
-                <h1 class="text-2xl font-bold text-gray-900">{{.Profile.DisplayName}}</h1>
+                <h1 class="text-2xl font-bold text-brown-900">{{.Profile.DisplayName}}</h1>
                 {{end}}
-                <p class="text-gray-600">@{{.Profile.Handle}}</p>
+                <p class="text-brown-700">@{{.Profile.Handle}}</p>
             </div>
         </div>
     </div>
 
     <!-- Stats -->
     <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-        <div class="bg-white rounded-lg shadow-sm p-4 text-center">
-            <div class="text-2xl font-bold text-brown-700">{{len .Brews}}</div>
-            <div class="text-sm text-gray-600">Brews</div>
+        <div class="bg-gradient-to-br from-brown-100 to-brown-200 rounded-lg shadow-md p-4 text-center border border-brown-300">
+            <div class="text-2xl font-bold text-brown-800">{{len .Brews}}</div>
+            <div class="text-sm text-brown-700">Brews</div>
         </div>
-        <div class="bg-white rounded-lg shadow-sm p-4 text-center">
-            <div class="text-2xl font-bold text-brown-700">{{len .Beans}}</div>
-            <div class="text-sm text-gray-600">Beans</div>
+        <div class="bg-gradient-to-br from-brown-100 to-brown-200 rounded-lg shadow-md p-4 text-center border border-brown-300">
+            <div class="text-2xl font-bold text-brown-800">{{len .Beans}}</div>
+            <div class="text-sm text-brown-700">Beans</div>
         </div>
-        <div class="bg-white rounded-lg shadow-sm p-4 text-center">
-            <div class="text-2xl font-bold text-brown-700">{{len .Roasters}}</div>
-            <div class="text-sm text-gray-600">Roasters</div>
+        <div class="bg-gradient-to-br from-brown-100 to-brown-200 rounded-lg shadow-md p-4 text-center border border-brown-300">
+            <div class="text-2xl font-bold text-brown-800">{{len .Roasters}}</div>
+            <div class="text-sm text-brown-700">Roasters</div>
         </div>
-        <div class="bg-white rounded-lg shadow-sm p-4 text-center">
-            <div class="text-2xl font-bold text-brown-700">{{len .Grinders}}</div>
-            <div class="text-sm text-gray-600">Grinders</div>
+        <div class="bg-gradient-to-br from-brown-100 to-brown-200 rounded-lg shadow-md p-4 text-center border border-brown-300">
+            <div class="text-2xl font-bold text-brown-800">{{len .Grinders}}</div>
+            <div class="text-sm text-brown-700">Grinders</div>
         </div>
-        <div class="bg-white rounded-lg shadow-sm p-4 text-center">
-            <div class="text-2xl font-bold text-brown-700">{{len .Brewers}}</div>
-            <div class="text-sm text-gray-600">Brewers</div>
+        <div class="bg-gradient-to-br from-brown-100 to-brown-200 rounded-lg shadow-md p-4 text-center border border-brown-300">
+            <div class="text-2xl font-bold text-brown-800">{{len .Brewers}}</div>
+            <div class="text-sm text-brown-700">Brewers</div>
         </div>
     </div>
 
     <!-- Tabs for content sections -->
     <div x-data="{ activeTab: 'brews' }">
         <!-- Tab buttons -->
-        <div class="bg-white rounded-lg shadow-sm mb-4">
-            <div class="flex border-b">
+        <div class="bg-gradient-to-br from-brown-100 to-brown-200 rounded-xl shadow-md mb-4 border border-brown-300">
+            <div class="flex border-b border-brown-300">
                 <button 
                     @click="activeTab = 'brews'" 
-                    :class="activeTab === 'brews' ? 'border-b-2 border-brown-600 text-brown-700' : 'text-gray-500 hover:text-gray-700'"
+                    :class="activeTab === 'brews' ? 'border-b-2 border-brown-700 text-brown-900' : 'text-brown-600 hover:text-brown-800'"
                     class="flex-1 py-3 px-4 text-center font-medium transition-colors">
                     Brews
                 </button>
                 <button 
                     @click="activeTab = 'beans'" 
-                    :class="activeTab === 'beans' ? 'border-b-2 border-brown-600 text-brown-700' : 'text-gray-500 hover:text-gray-700'"
+                    :class="activeTab === 'beans' ? 'border-b-2 border-brown-700 text-brown-900' : 'text-brown-600 hover:text-brown-800'"
                     class="flex-1 py-3 px-4 text-center font-medium transition-colors">
                     Beans
                 </button>
                 <button 
                     @click="activeTab = 'gear'" 
-                    :class="activeTab === 'gear' ? 'border-b-2 border-brown-600 text-brown-700' : 'text-gray-500 hover:text-gray-700'"
+                    :class="activeTab === 'gear' ? 'border-b-2 border-brown-700 text-brown-900' : 'text-brown-600 hover:text-brown-800'"
                     class="flex-1 py-3 px-4 text-center font-medium transition-colors">
                     Gear
                 </button>
@@ -80,65 +80,65 @@
         <div x-show="activeTab === 'brews'" class="space-y-4">
             {{if .Brews}}
             {{range .Brews}}
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div class="bg-gradient-to-br from-brown-50 to-brown-100 rounded-lg shadow-md border border-brown-200 p-4">
                 <!-- Brew info -->
-                <div class="bg-gray-50 rounded-lg p-3">
+                <div class="bg-white/60 backdrop-blur rounded-lg p-3 border border-brown-200">
                     <!-- Bean and roaster info -->
                     <div class="flex items-start justify-between gap-2 mb-2">
                         <div class="flex-1 min-w-0">
                             {{if .Bean}}
                             <div class="text-base">
-                                <span class="text-gray-600">Bean:</span>
-                                <span class="font-bold text-gray-900">
+                                <span class="text-brown-700">Bean:</span>
+                                <span class="font-bold text-brown-900">
                                     {{if .Bean.Name}}{{.Bean.Name}}{{else}}{{.Bean.Origin}}{{end}}{{if and .Bean.Roaster .Bean.Roaster.Name}} - {{.Bean.Roaster.Name}}{{end}}
                                 </span>
                             </div>
-                            <div class="text-sm text-gray-600">
+                            <div class="text-sm text-brown-600">
                                 {{if .Bean.Process}}{{.Bean.Process}}{{end}}{{if and .Bean.Process .Bean.RoastLevel}} | {{end}}{{if .Bean.RoastLevel}}{{.Bean.RoastLevel}}{{end}}{{if and (or .Bean.Process .Bean.RoastLevel) .Bean.Origin}} | {{end}}{{if .Bean.Origin}}{{.Bean.Origin}}{{end}}
                             </div>
                             {{end}}
                         </div>
                         {{if hasValue .Rating}}
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 flex-shrink-0">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-900 flex-shrink-0">
                             {{.Rating}}/10
                         </span>
                         {{end}}
                     </div>
                     
                     <!-- Brew parameters -->
-                    <div class="grid grid-cols-2 gap-2 text-sm text-gray-600">
+                    <div class="grid grid-cols-2 gap-2 text-sm text-brown-700">
                         {{if hasValue .CoffeeAmount}}
                         <div>
-                            <span class="text-gray-500">Coffee:</span> {{.CoffeeAmount}}g
+                            <span class="text-brown-600">Coffee:</span> {{.CoffeeAmount}}g
                         </div>
                         {{end}}
                         {{if hasValue .WaterAmount}}
                         <div>
-                            <span class="text-gray-500">Water:</span> {{.WaterAmount}}g
+                            <span class="text-brown-600">Water:</span> {{.WaterAmount}}g
                         </div>
                         {{end}}
                         {{if hasTemp .Temperature}}
                         <div>
-                            <span class="text-gray-500">Temp:</span> {{formatTemp .Temperature}}
+                            <span class="text-brown-600">Temp:</span> {{formatTemp .Temperature}}
                         </div>
                         {{end}}
                         {{if hasValue .TimeSeconds}}
                         <div>
-                            <span class="text-gray-500">Time:</span> {{formatTime .TimeSeconds}}
+                            <span class="text-brown-600">Time:</span> {{formatTime .TimeSeconds}}
                         </div>
                         {{end}}
                         {{if .GrindSize}}
                         <div>
-                            <span class="text-gray-500">Grind:</span> {{.GrindSize}}{{if .GrinderObj}} ({{.GrinderObj.Name}}){{end}}
+                            <span class="text-brown-600">Grind:</span> {{.GrindSize}}{{if .GrinderObj}} ({{.GrinderObj.Name}}){{end}}
                         </div>
                         {{end}}
                         <div>
-                            <span class="text-gray-500">Brewer:</span> <span class="font-bold text-gray-900">{{if .BrewerObj}}{{.BrewerObj.Name}}{{else if .Method}}{{.Method}}{{else}}-{{end}}</span>
+                            <span class="text-brown-600">Brewer:</span> <span class="font-bold text-brown-900">{{if .BrewerObj}}{{.BrewerObj.Name}}{{else if .Method}}{{.Method}}{{else}}-{{end}}</span>
                         </div>
                     </div>
 
                     {{if .TastingNotes}}
-                    <div class="mt-3 text-sm text-gray-700 italic border-t border-gray-200 pt-2">
+                    <div class="mt-3 text-sm text-brown-800 italic border-t border-brown-200 pt-2">
                         "{{.TastingNotes}}"
                     </div>
                     {{end}}
@@ -146,7 +146,7 @@
             </div>
             {{end}}
             {{else}}
-            <div class="bg-gray-50 rounded-lg p-6 text-center text-gray-500">
+            <div class="bg-brown-100 rounded-lg p-6 text-center text-brown-700 border border-brown-200">
                 <p>No brews yet.</p>
             </div>
             {{end}}
@@ -156,33 +156,33 @@
         <div x-show="activeTab === 'beans'" x-cloak class="space-y-4">
             {{if .Beans}}
             {{range .Beans}}
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div class="bg-gradient-to-br from-brown-50 to-brown-100 rounded-lg shadow-md border border-brown-200 p-4">
                 <div class="text-base mb-2">
-                    <span class="font-bold text-gray-900">
+                    <span class="font-bold text-brown-900">
                         {{if .Name}}{{.Name}}{{else}}{{.Origin}}{{end}}
                     </span>
                     {{if and .Roaster .Roaster.Name}}
-                    <span class="text-gray-600"> from {{.Roaster.Name}}</span>
+                    <span class="text-brown-700"> from {{.Roaster.Name}}</span>
                     {{end}}
                 </div>
-                <div class="text-sm text-gray-600 space-y-1">
+                <div class="text-sm text-brown-700 space-y-1">
                     {{if .Origin}}
-                    <div><span class="text-gray-500">Origin:</span> {{.Origin}}</div>
+                    <div><span class="text-brown-600">Origin:</span> {{.Origin}}</div>
                     {{end}}
                     {{if .RoastLevel}}
-                    <div><span class="text-gray-500">Roast:</span> {{.RoastLevel}}</div>
+                    <div><span class="text-brown-600">Roast:</span> {{.RoastLevel}}</div>
                     {{end}}
                     {{if .Process}}
-                    <div><span class="text-gray-500">Process:</span> {{.Process}}</div>
+                    <div><span class="text-brown-600">Process:</span> {{.Process}}</div>
                     {{end}}
                     {{if .Description}}
-                    <div class="mt-2 text-gray-700 italic">"{{.Description}}"</div>
+                    <div class="mt-2 text-brown-800 italic">"{{.Description}}"</div>
                     {{end}}
                 </div>
             </div>
             {{end}}
             {{else}}
-            <div class="bg-gray-50 rounded-lg p-6 text-center text-gray-500">
+            <div class="bg-brown-100 rounded-lg p-6 text-center text-brown-700 border border-brown-200">
                 <p>No beans yet.</p>
             </div>
             {{end}}
@@ -193,17 +193,17 @@
             <!-- Grinders -->
             {{if .Grinders}}
             <div>
-                <h3 class="text-lg font-semibold text-gray-800 mb-3">Grinders</h3>
+                <h3 class="text-lg font-semibold text-brown-900 mb-3">Grinders</h3>
                 <div class="space-y-3">
                     {{range .Grinders}}
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                        <div class="font-bold text-gray-900">{{.Name}}</div>
-                        <div class="text-sm text-gray-600 mt-1">
+                    <div class="bg-gradient-to-br from-brown-50 to-brown-100 rounded-lg shadow-md border border-brown-200 p-4">
+                        <div class="font-bold text-brown-900">{{.Name}}</div>
+                        <div class="text-sm text-brown-700 mt-1">
                             {{if .GrinderType}}<span>{{.GrinderType}}</span>{{end}}
                             {{if .BurrType}}<span class="ml-2">| {{.BurrType}} burrs</span>{{end}}
                         </div>
                         {{if .Notes}}
-                        <div class="mt-2 text-sm text-gray-700 italic">"{{.Notes}}"</div>
+                        <div class="mt-2 text-sm text-brown-800 italic">"{{.Notes}}"</div>
                         {{end}}
                     </div>
                     {{end}}
@@ -214,13 +214,13 @@
             <!-- Brewers -->
             {{if .Brewers}}
             <div>
-                <h3 class="text-lg font-semibold text-gray-800 mb-3">Brewers</h3>
+                <h3 class="text-lg font-semibold text-brown-900 mb-3">Brewers</h3>
                 <div class="space-y-3">
                     {{range .Brewers}}
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                        <div class="font-bold text-gray-900">{{.Name}}</div>
+                    <div class="bg-gradient-to-br from-brown-50 to-brown-100 rounded-lg shadow-md border border-brown-200 p-4">
+                        <div class="font-bold text-brown-900">{{.Name}}</div>
                         {{if .Description}}
-                        <div class="mt-1 text-sm text-gray-700 italic">"{{.Description}}"</div>
+                        <div class="mt-1 text-sm text-brown-800 italic">"{{.Description}}"</div>
                         {{end}}
                     </div>
                     {{end}}
@@ -231,17 +231,17 @@
             <!-- Roasters -->
             {{if .Roasters}}
             <div>
-                <h3 class="text-lg font-semibold text-gray-800 mb-3">Favorite Roasters</h3>
+                <h3 class="text-lg font-semibold text-brown-900 mb-3">Favorite Roasters</h3>
                 <div class="space-y-3">
                     {{range .Roasters}}
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                        <div class="font-bold text-gray-900">{{.Name}}</div>
-                        <div class="text-sm text-gray-600 mt-1">
+                    <div class="bg-gradient-to-br from-brown-50 to-brown-100 rounded-lg shadow-md border border-brown-200 p-4">
+                        <div class="font-bold text-brown-900">{{.Name}}</div>
+                        <div class="text-sm text-brown-700 mt-1">
                             {{if .Location}}<span>{{.Location}}</span>{{end}}
                             {{if .Website}}
                             {{$safeWebsite := safeWebsiteURL .Website}}
                             {{if $safeWebsite}}
-                            <a href="{{$safeWebsite}}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline ml-2">{{$safeWebsite}}</a>
+                            <a href="{{$safeWebsite}}" target="_blank" rel="noopener noreferrer" class="text-brown-800 hover:underline ml-2">{{$safeWebsite}}</a>
                             {{end}}
                             {{end}}
                         </div>
@@ -252,7 +252,7 @@
             {{end}}
 
             {{if and (not .Grinders) (not .Brewers) (not .Roasters)}}
-            <div class="bg-gray-50 rounded-lg p-6 text-center text-gray-500">
+            <div class="bg-brown-100 rounded-lg p-6 text-center text-brown-700 border border-brown-200">
                 <p>No gear added yet.</p>
             </div>
             {{end}}

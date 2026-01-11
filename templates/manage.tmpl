@@ -2,28 +2,28 @@
 <script src="/static/js/manage-page.js"></script>
 
 <div class="max-w-6xl mx-auto" x-data="managePage()">
-    <h2 class="text-3xl font-bold text-gray-800 mb-6">Manage</h2>
+    <h2 class="text-3xl font-bold text-brown-900 mb-6">Manage</h2>
 
     <!-- Tabs -->
-    <div class="mb-6 border-b border-gray-200">
+    <div class="mb-6 border-b-2 border-brown-300">
         <nav class="-mb-px flex space-x-8">
             <button @click="tab = 'beans'"
-                :class="tab === 'beans' ? 'border-brown-600 text-brown-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                :class="tab === 'beans' ? 'border-brown-700 text-brown-900' : 'border-transparent text-brown-600 hover:text-brown-800 hover:border-brown-400'"
                 class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
                 Beans
             </button>
             <button @click="tab = 'roasters'"
-                :class="tab === 'roasters' ? 'border-brown-600 text-brown-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                :class="tab === 'roasters' ? 'border-brown-700 text-brown-900' : 'border-transparent text-brown-600 hover:text-brown-800 hover:border-brown-400'"
                 class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
                 Roasters
             </button>
             <button @click="tab = 'grinders'"
-                :class="tab === 'grinders' ? 'border-brown-600 text-brown-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                :class="tab === 'grinders' ? 'border-brown-700 text-brown-900' : 'border-transparent text-brown-600 hover:text-brown-800 hover:border-brown-400'"
                 class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
                 Grinders
             </button>
             <button @click="tab = 'brewers'"
-                :class="tab === 'brewers' ? 'border-brown-600 text-brown-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                :class="tab === 'brewers' ? 'border-brown-700 text-brown-900' : 'border-transparent text-brown-600 hover:text-brown-800 hover:border-brown-400'"
                 class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
                 Brewers
             </button>
@@ -35,33 +35,33 @@
         <div class="animate-pulse">
             <!-- Header skeleton -->
             <div class="mb-4 flex justify-between items-center">
-                <div class="h-6 bg-gray-200 rounded w-32"></div>
-                <div class="h-10 bg-brown-200 rounded w-28"></div>
+                <div class="h-6 bg-brown-300 rounded w-32"></div>
+                <div class="h-10 bg-brown-300 rounded w-28"></div>
             </div>
             
             <!-- Table skeleton -->
-            <div class="bg-white shadow-md rounded-lg overflow-hidden">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+            <div class="bg-gradient-to-br from-brown-100 to-brown-200 shadow-xl rounded-xl overflow-hidden border border-brown-300">
+                <table class="min-w-full divide-y divide-brown-300">
+                    <thead class="bg-brown-200/80">
                         <tr>
-                            <th class="px-6 py-3 text-left"><div class="h-3 bg-gray-200 rounded w-16"></div></th>
-                            <th class="px-6 py-3 text-left"><div class="h-3 bg-gray-200 rounded w-16"></div></th>
-                            <th class="px-6 py-3 text-left"><div class="h-3 bg-gray-200 rounded w-20"></div></th>
-                            <th class="px-6 py-3 text-left"><div class="h-3 bg-gray-200 rounded w-24"></div></th>
-                            <th class="px-6 py-3 text-left"><div class="h-3 bg-gray-200 rounded w-16"></div></th>
+                            <th class="px-6 py-3 text-left"><div class="h-3 bg-brown-300 rounded w-16"></div></th>
+                            <th class="px-6 py-3 text-left"><div class="h-3 bg-brown-300 rounded w-16"></div></th>
+                            <th class="px-6 py-3 text-left"><div class="h-3 bg-brown-300 rounded w-20"></div></th>
+                            <th class="px-6 py-3 text-left"><div class="h-3 bg-brown-300 rounded w-24"></div></th>
+                            <th class="px-6 py-3 text-left"><div class="h-3 bg-brown-300 rounded w-16"></div></th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tbody class="bg-brown-50/60 divide-y divide-brown-200">
                         {{range iterate 4}}
                         <tr>
-                            <td class="px-6 py-4"><div class="h-4 bg-gray-200 rounded w-24"></div></td>
-                            <td class="px-6 py-4"><div class="h-4 bg-gray-200 rounded w-20"></div></td>
-                            <td class="px-6 py-4"><div class="h-4 bg-gray-200 rounded w-28"></div></td>
-                            <td class="px-6 py-4"><div class="h-4 bg-gray-200 rounded w-16"></div></td>
+                            <td class="px-6 py-4"><div class="h-4 bg-brown-300 rounded w-24"></div></td>
+                            <td class="px-6 py-4"><div class="h-4 bg-brown-300 rounded w-20"></div></td>
+                            <td class="px-6 py-4"><div class="h-4 bg-brown-300 rounded w-28"></div></td>
+                            <td class="px-6 py-4"><div class="h-4 bg-brown-300 rounded w-16"></div></td>
                             <td class="px-6 py-4">
                                 <div class="flex gap-2">
-                                    <div class="h-4 bg-gray-200 rounded w-10"></div>
-                                    <div class="h-4 bg-gray-200 rounded w-12"></div>
+                                    <div class="h-4 bg-brown-300 rounded w-10"></div>
+                                    <div class="h-4 bg-brown-300 rounded w-12"></div>
                                 </div>
                             </td>
                         </tr>

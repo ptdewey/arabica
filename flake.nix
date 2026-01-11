@@ -21,6 +21,13 @@
           type = "app";
           program = "${self.packages.${system}.arabica}/bin/arabica";
         };
+        tailwind = {
+          type = "app";
+          program = toString (pkgs.writeShellScript "tailwind-build" ''
+            cd ${./.}
+            ${pkgs.tailwindcss}/bin/tailwindcss -i web/static/css/style.css -o web/static/css/output.css --minify
+          '');
+        };
       });
 
       nixosModules.default = import ./module.nix;

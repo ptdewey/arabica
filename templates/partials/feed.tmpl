@@ -2,185 +2,185 @@
 <div class="space-y-4">
     {{if .FeedItems}}
     {{range .FeedItems}}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+    <div class="bg-gradient-to-br from-brown-50 to-brown-100 rounded-lg shadow-md border border-brown-200 p-4 hover:shadow-lg transition-shadow">
         <!-- Author row -->
         <div class="flex items-center gap-3 mb-3">
             <a href="/profile/{{.Author.Handle}}" class="flex-shrink-0">
                 {{if .Author.Avatar}}
                 {{$safeAvatar := safeAvatarURL .Author.Avatar}}
                 {{if $safeAvatar}}
-                <img src="{{$safeAvatar}}" alt="" class="w-10 h-10 rounded-full object-cover hover:ring-2 hover:ring-brown-400 transition" />
+                <img src="{{$safeAvatar}}" alt="" class="w-10 h-10 rounded-full object-cover hover:ring-2 hover:ring-brown-600 transition" />
                 {{else}}
-                <div class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center hover:ring-2 hover:ring-brown-400 transition">
-                    <span class="text-gray-500 text-sm">?</span>
+                <div class="w-10 h-10 rounded-full bg-brown-300 flex items-center justify-center hover:ring-2 hover:ring-brown-600 transition">
+                    <span class="text-brown-600 text-sm">?</span>
                 </div>
                 {{end}}
                 {{else}}
-                <div class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center hover:ring-2 hover:ring-brown-400 transition">
-                    <span class="text-gray-500 text-sm">?</span>
+                <div class="w-10 h-10 rounded-full bg-brown-300 flex items-center justify-center hover:ring-2 hover:ring-brown-600 transition">
+                    <span class="text-brown-600 text-sm">?</span>
                 </div>
                 {{end}}
             </a>
             <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2">
                     {{if .Author.DisplayName}}
-                    <a href="/profile/{{.Author.Handle}}" class="font-medium text-gray-900 truncate hover:text-brown-700 hover:underline">{{.Author.DisplayName}}</a>
+                    <a href="/profile/{{.Author.Handle}}" class="font-medium text-brown-900 truncate hover:text-brown-700 hover:underline">{{.Author.DisplayName}}</a>
                     {{end}}
-                    <a href="/profile/{{.Author.Handle}}" class="text-gray-500 text-sm truncate hover:text-brown-600 hover:underline">@{{.Author.Handle}}</a>
+                    <a href="/profile/{{.Author.Handle}}" class="text-brown-600 text-sm truncate hover:text-brown-700 hover:underline">@{{.Author.Handle}}</a>
                 </div>
-                <span class="text-gray-400 text-sm">{{.TimeAgo}}</span>
+                <span class="text-brown-500 text-sm">{{.TimeAgo}}</span>
             </div>
         </div>
 
         <!-- Action header -->
-        <div class="mb-2 text-sm text-gray-600 italic">
+        <div class="mb-2 text-sm text-brown-700 italic">
             {{.Action}}
         </div>
 
         <!-- Record content -->
         {{if eq .RecordType "brew"}}
         <!-- Brew info -->
-        <div class="bg-gray-50 rounded-lg p-3">
+        <div class="bg-white/60 backdrop-blur rounded-lg p-3 border border-brown-200">
             <!-- Bean and roaster info -->
             <div class="flex items-start justify-between gap-2 mb-2">
                 <div class="flex-1 min-w-0">
                     {{if .Brew.Bean}}
                     <!-- Bean name and roaster -->
                     <div class="text-base">
-                        <span class="text-gray-600">Bean:</span>
-                        <span class="font-bold text-gray-900">
+                        <span class="text-brown-700">Bean:</span>
+                        <span class="font-bold text-brown-900">
                             {{if .Brew.Bean.Name}}{{.Brew.Bean.Name}}{{else}}{{.Brew.Bean.Origin}}{{end}}{{if and .Brew.Bean.Roaster .Brew.Bean.Roaster.Name}} - {{.Brew.Bean.Roaster.Name}}{{end}}
                         </span>
                     </div>
                     <!-- Process, roast level, origin -->
-                    <div class="text-sm text-gray-600">
+                    <div class="text-sm text-brown-600">
                         {{if .Brew.Bean.Process}}{{.Brew.Bean.Process}}{{end}}{{if and .Brew.Bean.Process .Brew.Bean.RoastLevel}} • {{end}}{{if .Brew.Bean.RoastLevel}}{{.Brew.Bean.RoastLevel}}{{end}}{{if and (or .Brew.Bean.Process .Brew.Bean.RoastLevel) .Brew.Bean.Origin}} • {{end}}{{if .Brew.Bean.Origin}}{{.Brew.Bean.Origin}}{{end}}
                     </div>
                     {{end}}
                 </div>
                 {{if hasValue .Brew.Rating}}
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 flex-shrink-0">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-900 flex-shrink-0">
                     ⭐ {{.Brew.Rating}}/10
                 </span>
                 {{end}}
             </div>
             
             <!-- Brew parameters -->
-            <div class="grid grid-cols-2 gap-2 text-sm text-gray-600">
+            <div class="grid grid-cols-2 gap-2 text-sm text-brown-700">
                 {{if hasValue .Brew.CoffeeAmount}}
                 <div>
-                    <span class="text-gray-500">Coffee:</span> {{.Brew.CoffeeAmount}}g
+                    <span class="text-brown-600">Coffee:</span> {{.Brew.CoffeeAmount}}g
                 </div>
                 {{end}}
                 {{if hasValue .Brew.WaterAmount}}
                 <div>
-                    <span class="text-gray-500">Water:</span> {{.Brew.WaterAmount}}g
+                    <span class="text-brown-600">Water:</span> {{.Brew.WaterAmount}}g
                 </div>
                 {{end}}
                 {{if hasTemp .Brew.Temperature}}
                 <div>
-                    <span class="text-gray-500">Temp:</span> {{formatTemp .Brew.Temperature}}
+                    <span class="text-brown-600">Temp:</span> {{formatTemp .Brew.Temperature}}
                 </div>
                 {{end}}
                 {{if hasValue .Brew.TimeSeconds}}
                 <div>
-                    <span class="text-gray-500">Time:</span> {{formatTime .Brew.TimeSeconds}}
+                    <span class="text-brown-600">Time:</span> {{formatTime .Brew.TimeSeconds}}
                 </div>
                 {{end}}
                 {{if .Brew.GrindSize}}
                 <div>
-                    <span class="text-gray-500">Grind:</span> {{.Brew.GrindSize}}{{if .Brew.GrinderObj}} ({{.Brew.GrinderObj.Name}}){{end}}
+                    <span class="text-brown-600">Grind:</span> {{.Brew.GrindSize}}{{if .Brew.GrinderObj}} ({{.Brew.GrinderObj.Name}}){{end}}
                 </div>
                 {{end}}
                 <div>
-                    <span class="text-gray-500">Brewer:</span> <span class="font-bold text-gray-900">{{if .Brew.BrewerObj}}{{.Brew.BrewerObj.Name}}{{else if .Brew.Method}}{{.Brew.Method}}{{else}}-{{end}}</span>
+                    <span class="text-brown-600">Brewer:</span> <span class="font-bold text-brown-900">{{if .Brew.BrewerObj}}{{.Brew.BrewerObj.Name}}{{else if .Brew.Method}}{{.Brew.Method}}{{else}}-{{end}}</span>
                 </div>
             </div>
 
             {{if .Brew.TastingNotes}}
-            <div class="mt-3 text-sm text-gray-700 italic border-t border-gray-200 pt-2">
+            <div class="mt-3 text-sm text-brown-800 italic border-t border-brown-200 pt-2">
                 "{{.Brew.TastingNotes}}"
             </div>
             {{end}}
         </div>
         {{else if eq .RecordType "bean"}}
         <!-- Bean info -->
-        <div class="bg-gray-50 rounded-lg p-3">
+        <div class="bg-white/60 backdrop-blur rounded-lg p-3 border border-brown-200">
             <div class="text-base mb-2">
-                <span class="font-bold text-gray-900">
+                <span class="font-bold text-brown-900">
                     {{if .Bean.Name}}{{.Bean.Name}}{{else}}{{.Bean.Origin}}{{end}}
                 </span>
                 {{if and .Bean.Roaster .Bean.Roaster.Name}}
-                <span class="text-gray-600"> from {{.Bean.Roaster.Name}}</span>
+                <span class="text-brown-700"> from {{.Bean.Roaster.Name}}</span>
                 {{end}}
             </div>
-            <div class="text-sm text-gray-600 space-y-1">
+            <div class="text-sm text-brown-700 space-y-1">
                 {{if .Bean.Origin}}
-                <div><span class="text-gray-500">Origin:</span> {{.Bean.Origin}}</div>
+                <div><span class="text-brown-600">Origin:</span> {{.Bean.Origin}}</div>
                 {{end}}
                 {{if .Bean.RoastLevel}}
-                <div><span class="text-gray-500">Roast:</span> {{.Bean.RoastLevel}}</div>
+                <div><span class="text-brown-600">Roast:</span> {{.Bean.RoastLevel}}</div>
                 {{end}}
                 {{if .Bean.Process}}
-                <div><span class="text-gray-500">Process:</span> {{.Bean.Process}}</div>
+                <div><span class="text-brown-600">Process:</span> {{.Bean.Process}}</div>
                 {{end}}
                 {{if .Bean.Description}}
-                <div class="mt-2 text-gray-700 italic">"{{.Bean.Description}}"</div>
+                <div class="mt-2 text-brown-800 italic">"{{.Bean.Description}}"</div>
                 {{end}}
             </div>
         </div>
         {{else if eq .RecordType "roaster"}}
         <!-- Roaster info -->
-        <div class="bg-gray-50 rounded-lg p-3">
+        <div class="bg-white/60 backdrop-blur rounded-lg p-3 border border-brown-200">
             <div class="text-base mb-2">
-                <span class="font-bold text-gray-900">{{.Roaster.Name}}</span>
+                <span class="font-bold text-brown-900">{{.Roaster.Name}}</span>
             </div>
-            <div class="text-sm text-gray-600 space-y-1">
+            <div class="text-sm text-brown-700 space-y-1">
                 {{if .Roaster.Location}}
-                <div><span class="text-gray-500">Location:</span> {{.Roaster.Location}}</div>
+                <div><span class="text-brown-600">Location:</span> {{.Roaster.Location}}</div>
                 {{end}}
                 {{if .Roaster.Website}}
                 {{$safeWebsite := safeWebsiteURL .Roaster.Website}}
                 {{if $safeWebsite}}
-                <div><span class="text-gray-500">Website:</span> <a href="{{$safeWebsite}}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">{{$safeWebsite}}</a></div>
+                <div><span class="text-brown-600">Website:</span> <a href="{{$safeWebsite}}" target="_blank" rel="noopener noreferrer" class="text-brown-800 hover:underline">{{$safeWebsite}}</a></div>
                 {{end}}
                 {{end}}
             </div>
         </div>
         {{else if eq .RecordType "grinder"}}
         <!-- Grinder info -->
-        <div class="bg-gray-50 rounded-lg p-3">
+        <div class="bg-white/60 backdrop-blur rounded-lg p-3 border border-brown-200">
             <div class="text-base mb-2">
-                <span class="font-bold text-gray-900">{{.Grinder.Name}}</span>
+                <span class="font-bold text-brown-900">{{.Grinder.Name}}</span>
             </div>
-            <div class="text-sm text-gray-600 space-y-1">
+            <div class="text-sm text-brown-700 space-y-1">
                 {{if .Grinder.GrinderType}}
-                <div><span class="text-gray-500">Type:</span> {{.Grinder.GrinderType}}</div>
+                <div><span class="text-brown-600">Type:</span> {{.Grinder.GrinderType}}</div>
                 {{end}}
                 {{if .Grinder.BurrType}}
-                <div><span class="text-gray-500">Burr:</span> {{.Grinder.BurrType}}</div>
+                <div><span class="text-brown-600">Burr:</span> {{.Grinder.BurrType}}</div>
                 {{end}}
                 {{if .Grinder.Notes}}
-                <div class="mt-2 text-gray-700 italic">"{{.Grinder.Notes}}"</div>
+                <div class="mt-2 text-brown-800 italic">"{{.Grinder.Notes}}"</div>
                 {{end}}
             </div>
         </div>
         {{else if eq .RecordType "brewer"}}
         <!-- Brewer info -->
-        <div class="bg-gray-50 rounded-lg p-3">
+        <div class="bg-white/60 backdrop-blur rounded-lg p-3 border border-brown-200">
             <div class="text-base mb-2">
-                <span class="font-bold text-gray-900">{{.Brewer.Name}}</span>
+                <span class="font-bold text-brown-900">{{.Brewer.Name}}</span>
             </div>
             {{if .Brewer.Description}}
-            <div class="text-sm text-gray-700 italic">"{{.Brewer.Description}}"</div>
+            <div class="text-sm text-brown-800 italic">"{{.Brewer.Description}}"</div>
             {{end}}
         </div>
         {{end}}
     </div>
     {{end}}
     {{else}}
-    <div class="bg-gray-50 rounded-lg p-6 text-center text-gray-500">
-        <p class="mb-2">No activity in the feed yet.</p>
+    <div class="bg-brown-100 rounded-lg p-6 text-center text-brown-700 border border-brown-200">
+        <p class="mb-2 font-medium">No activity in the feed yet.</p>
         <p class="text-sm">Be the first to add something!</p>
     </div>
     {{end}}
