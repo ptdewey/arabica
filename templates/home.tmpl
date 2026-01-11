@@ -1,8 +1,12 @@
 {{define "content"}}
 <div class="max-w-4xl mx-auto">
     <div class="bg-white rounded-lg shadow-md p-8 mb-8">
-        <h2 class="text-3xl font-bold text-gray-800 mb-4">Welcome to Arabica</h2>
-        <p class="text-gray-600 mb-6">Track your coffee brewing journey with detailed logs of every cup.</p>
+        <div class="flex items-center gap-3 mb-4">
+            <h2 class="text-3xl font-bold text-gray-800">Welcome to Arabica</h2>
+            <span class="text-xs bg-yellow-500 text-brown-900 px-2 py-1 rounded font-semibold">ALPHA</span>
+        </div>
+        <p class="text-gray-600 mb-2">Track your coffee brewing journey with detailed logs of every cup.</p>
+        <p class="text-sm text-gray-500 italic mb-6">Note: Arabica is currently in alpha. Features and data structures may change.</p>
 
         {{if .IsAuthenticated}}
         <!-- Authenticated: Show app actions and logout -->
