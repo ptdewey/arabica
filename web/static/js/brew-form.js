@@ -210,7 +210,6 @@ function brewForm() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-Token': window.getCSRFToken ? window.getCSRFToken() : ''
                 },
                 body: JSON.stringify(payload)
             });
@@ -244,7 +243,6 @@ function brewForm() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-Token': window.getCSRFToken ? window.getCSRFToken() : ''
                 },
                 body: JSON.stringify(this.newGrinder)
             });
@@ -278,7 +276,6 @@ function brewForm() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-Token': window.getCSRFToken ? window.getCSRFToken() : ''
                 },
                 body: JSON.stringify(this.newBrewer)
             });

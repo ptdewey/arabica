@@ -48,7 +48,6 @@ function managePage() {
                 method,
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-Token': window.getCSRFToken ? window.getCSRFToken() : ''
                 },
                 body: JSON.stringify(this.beanForm)
             });
@@ -70,9 +69,6 @@ function managePage() {
 
             const response = await fetch(`/api/beans/${rkey}`, {
                 method: 'DELETE',
-                headers: {
-                    'X-CSRF-Token': window.getCSRFToken ? window.getCSRFToken() : ''
-                }
             });
             if (response.ok) {
                 // Invalidate cache and reload
@@ -105,7 +101,6 @@ function managePage() {
                 method,
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-Token': window.getCSRFToken ? window.getCSRFToken() : ''
                 },
                 body: JSON.stringify(this.roasterForm)
             });
@@ -127,9 +122,6 @@ function managePage() {
 
             const response = await fetch(`/api/roasters/${rkey}`, {
                 method: 'DELETE',
-                headers: {
-                    'X-CSRF-Token': window.getCSRFToken ? window.getCSRFToken() : ''
-                }
             });
             if (response.ok) {
                 // Invalidate cache and reload
@@ -162,7 +154,6 @@ function managePage() {
                 method,
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-Token': window.getCSRFToken ? window.getCSRFToken() : ''
                 },
                 body: JSON.stringify(this.grinderForm)
             });
@@ -184,9 +175,6 @@ function managePage() {
 
             const response = await fetch(`/api/grinders/${rkey}`, {
                 method: 'DELETE',
-                headers: {
-                    'X-CSRF-Token': window.getCSRFToken ? window.getCSRFToken() : ''
-                }
             });
             if (response.ok) {
                 // Invalidate cache and reload
@@ -227,7 +215,6 @@ function managePage() {
                 method,
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-Token': window.getCSRFToken ? window.getCSRFToken() : ''
                 },
                 body: JSON.stringify(this.brewerForm)
             });
@@ -249,9 +236,6 @@ function managePage() {
 
             const response = await fetch(`/api/brewers/${rkey}`, {
                 method: 'DELETE',
-                headers: {
-                    'X-CSRF-Token': window.getCSRFToken ? window.getCSRFToken() : ''
-                }
             });
             if (response.ok) {
                 // Invalidate cache and reload

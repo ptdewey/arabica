@@ -6,8 +6,8 @@
 
 const CACHE_KEY = 'arabica_data_cache';
 const CACHE_VERSION = 1;
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
-const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL_MS = 30 * 1000; // 30 seconds (shorter for multi-device sync)
+const REFRESH_INTERVAL_MS = 30 * 1000; // 30 seconds
 
 // Module state
 let refreshTimer = null;
@@ -227,6 +227,27 @@ async function init() {
             console.warn('Initial cache load failed:', e);
         }
     }
+    
+    // Refresh when user returns to tab/app (handles multi-device sync)
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && !isCacheValid()) {
+            refreshCache().catch(e => console.warn('Visibility refresh failed:', e));
+        }
+    });
+    
+    // For iOS PWA: refresh on focus
+    window.addEventListener('focus', () => {
+        if (!isCacheValid()) {
+            refreshCache().catch(e => console.warn('Focus refresh failed:', e));
+        }
+    });
+    
+    // Refresh on page show (back button, bfcache restore)
+    window.addEventListener('pageshow', (event) => {
+        if (event.persisted && !isCacheValid()) {
+            refreshCache().catch(e => console.warn('Pageshow refresh failed:', e));
+        }
+    });
 }
 
 /**

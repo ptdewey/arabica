@@ -9,28 +9,28 @@
         <p class="text-sm text-brown-700 italic mb-6">Note: Arabica is currently in alpha. Features and data structures may change.</p>
 
         {{if .IsAuthenticated}}
-        <!-- Authenticated: Show app actions and logout -->
+        <!-- Authenticated: Show app actions -->
         <div class="mb-6">
             <p class="text-sm text-brown-700">Logged in as: <span class="font-mono text-brown-900 font-semibold">{{.UserDID}}</span></p>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <a href="/brews/new"
-                class="block bg-gradient-to-br from-brown-700 to-brown-800 text-white text-center py-4 px-6 rounded-xl hover:from-brown-800 hover:to-brown-900 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                class="block bg-gradient-to-br from-brown-700 to-brown-800 text-white text-center py-4 px-6 rounded-xl hover:from-brown-800 hover:to-brown-900 transition-all shadow-lg hover:shadow-xl transform">
                 <span class="text-xl font-semibold">☕ Add New Brew</span>
             </a>
             <a href="/brews"
-                class="block bg-gradient-to-br from-brown-500 to-brown-600 text-white text-center py-4 px-6 rounded-xl hover:from-brown-600 hover:to-brown-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                class="block bg-gradient-to-br from-brown-500 to-brown-600 text-white text-center py-4 px-6 rounded-xl hover:from-brown-600 hover:to-brown-700 transition-all shadow-lg hover:shadow-xl">
                 <span class="text-xl font-semibold">📋 View All Brews</span>
             </a>
         </div>
-        <div class="text-center mt-6">
-            <form action="/logout" method="POST" class="inline-block">
-                <button type="submit"
-                    class="bg-brown-400 text-brown-900 py-3 px-8 rounded-lg hover:bg-brown-500 transition-all text-lg font-medium shadow-md hover:shadow-lg">
-                    Logout
-                </button>
-            </form>
-        </div>
+        <!-- <div class="text-center mt-6"> -->
+        <!--     <form action="/logout" method="POST" class="inline-block"> -->
+        <!--         <button type="submit" -->
+        <!--             class="bg-brown-400 text-brown-900 py-3 px-8 rounded-lg hover:bg-brown-500 transition-all text-lg font-medium shadow-md hover:shadow-lg"> -->
+        <!--             Logout -->
+        <!--         </button> -->
+        <!--     </form> -->
+        <!-- </div> -->
         {{else}}
         <!-- Not authenticated: Show login -->
         <div>

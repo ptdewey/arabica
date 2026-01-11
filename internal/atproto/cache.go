@@ -8,7 +8,8 @@ import (
 )
 
 // CacheTTL is how long cached data remains valid
-const CacheTTL = 5 * time.Minute
+// Set to 2 minutes to balance multi-device sync with PDS request load
+const CacheTTL = 2 * time.Minute
 
 // UserCache holds cached data for a single user.
 // This struct is immutable once created - modifications create new instances.
