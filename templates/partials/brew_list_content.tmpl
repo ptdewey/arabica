@@ -12,57 +12,106 @@
     <table class="min-w-full divide-y divide-brown-300">
         <thead class="bg-brown-200/80">
             <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-brown-900 uppercase tracking-wider">Date</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-brown-900 uppercase tracking-wider">Bean</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-brown-900 uppercase tracking-wider">Roaster</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-brown-900 uppercase tracking-wider">Method</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-brown-900 uppercase tracking-wider">Rating</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-brown-900 uppercase tracking-wider">Actions</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-brown-900 uppercase tracking-wider">Date</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-brown-900 uppercase tracking-wider">Bean</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-brown-900 uppercase tracking-wider">Brewer</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-brown-900 uppercase tracking-wider">Variables</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-brown-900 uppercase tracking-wider">Notes</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-brown-900 uppercase tracking-wider">Rating</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-brown-900 uppercase tracking-wider">Actions</th>
             </tr>
         </thead>
         <tbody class="bg-brown-50/60 divide-y divide-brown-200">
             {{range .Brews}}
             <tr class="hover:bg-brown-100/60 transition-colors">
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-brown-900 font-medium">
-                    {{.CreatedAt.Format "Jan 2, 2006"}}
+                <!-- Date -->
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-brown-900 font-medium align-top">
+                    <div>{{.CreatedAt.Format "Jan 2"}}</div>
+                    <div class="text-xs text-brown-600">{{.CreatedAt.Format "2006"}}</div>
                 </td>
-                <td class="px-6 py-4 text-sm text-brown-900">
+                
+                <!-- Bean (with all details) -->
+                <td class="px-4 py-4 text-sm text-brown-900 align-top">
                     {{if .Bean}}
-                    {{if .Bean.Name}}
-                    <div class="font-medium text-brown-900">{{.Bean.Name}}</div>
-                    <div class="text-brown-600 text-xs">{{.Bean.Origin}} - {{.Bean.RoastLevel}}</div>
-                    {{else}}
-                    <div class="font-medium text-brown-900">{{.Bean.Origin}}</div>
-                    <div class="text-brown-600">{{.Bean.RoastLevel}}</div>
+                    <div class="font-bold text-brown-900">
+                        {{if .Bean.Name}}{{.Bean.Name}}{{else}}{{.Bean.Origin}}{{end}}
+                    </div>
+                    {{if and .Bean.Roaster .Bean.Roaster.Name}}
+                    <div class="text-xs text-brown-700 mt-0.5">
+                        <span class="font-medium">{{.Bean.Roaster.Name}}</span>
+                    </div>
                     {{end}}
+                    <div class="text-xs text-brown-600 mt-0.5 space-y-0.5">
+                        {{if .Bean.Origin}}<div>📍 {{.Bean.Origin}}</div>{{end}}
+                        {{if .Bean.RoastLevel}}<div>🔥 {{.Bean.RoastLevel}}</div>{{end}}
+                        {{if hasValue .CoffeeAmount}}<div>⚖️ {{.CoffeeAmount}}g</div>{{end}}
+                    </div>
                     {{else}}
                     <span class="text-brown-400">-</span>
                     {{end}}
                 </td>
-                <td class="px-6 py-4 text-sm text-brown-900">
-                    {{if and .Bean .Bean.Roaster .Bean.Roaster.Name}}
-                    {{.Bean.Roaster.Name}}
+                
+                <!-- Brewer -->
+                <td class="px-4 py-4 text-sm text-brown-900 align-top">
+                    {{if .BrewerObj}}
+                    <div class="font-medium text-brown-900">{{.BrewerObj.Name}}</div>
+                    {{else if .Method}}
+                    <div class="font-medium text-brown-900">{{.Method}}</div>
                     {{else}}
                     <span class="text-brown-400">-</span>
                     {{end}}
                 </td>
-                <td class="px-6 py-4 text-sm text-brown-900">
-                    <div class="font-medium">{{.Method}}</div>
-                    <div class="text-brown-600 text-xs">
-                        {{.TempFormatted}} • {{.TimeFormatted}}
+                
+                <!-- Variables (grouped) -->
+                <td class="px-4 py-4 text-xs text-brown-700 align-top">
+                    <div class="space-y-1">
+                        {{if .GrinderObj}}
+                        <div><span class="text-brown-600">Grinder:</span> {{.GrinderObj.Name}}{{if .GrindSize}} ({{.GrindSize}}){{end}}</div>
+                        {{else if .GrindSize}}
+                        <div><span class="text-brown-600">Grind:</span> {{.GrindSize}}</div>
+                        {{end}}
+                        
+                        {{if hasTemp .Temperature}}
+                        <div><span class="text-brown-600">Temp:</span> {{formatTemp .Temperature}}</div>
+                        {{end}}
+                        
+                        {{if .Pours}}
+                        <div><span class="text-brown-600">Pours:</span></div>
+                        {{range .Pours}}
+                        <div class="pl-2 text-brown-600">• {{.WaterAmount}}g @ {{formatTime .TimeSeconds}}</div>
+                        {{end}}
+                        {{else if hasValue .WaterAmount}}
+                        <div><span class="text-brown-600">Water:</span> {{.WaterAmount}}g</div>
+                        {{end}}
+                        
+                        {{if hasValue .TimeSeconds}}
+                        <div><span class="text-brown-600">Time:</span> {{formatTime .TimeSeconds}}</div>
+                        {{end}}
                     </div>
-                    {{if .Pours}}
-                    <div class="text-brown-600 text-xs mt-1">
-                        {{len .Pours}} pours
-                    </div>
+                </td>
+                
+                <!-- Tasting Notes -->
+                <td class="px-4 py-4 text-xs text-brown-800 align-top max-w-xs">
+                    {{if .TastingNotes}}
+                    <div class="italic line-clamp-3">{{.TastingNotes}}</div>
+                    {{else}}
+                    <span class="text-brown-400">-</span>
                     {{end}}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-brown-900">
+                
+                <!-- Rating -->
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-brown-900 align-top">
+                    {{if hasValue .Rating}}
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-900">
-                        ⭐ {{.RatingFormatted}}
+                        ⭐ {{formatRating .Rating}}
                     </span>
+                    {{else}}
+                    <span class="text-brown-400">-</span>
+                    {{end}}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                
+                <!-- Actions -->
+                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium space-x-2 align-top">
                     <a href="/brews/{{.RKey}}"
                         class="text-brown-700 hover:text-brown-900 font-medium">View</a>
                     <button hx-delete="/brews/{{.RKey}}"
