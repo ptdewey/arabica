@@ -16,13 +16,7 @@
     {{if .IsAuthenticated}}
     <script src="/static/js/data-cache.js"></script>
     {{end}}
-    <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/static/service-worker.js')
-                .then(() => console.log('Service Worker registered'))
-                .catch((err) => console.log('Service Worker registration failed:', err));
-        }
-    </script>
+    <script src="/static/js/sw-register.js"></script>
 </head>
 <body class="bg-gray-50 min-h-full flex flex-col">
     <nav class="bg-brown-800 text-white shadow-lg">
