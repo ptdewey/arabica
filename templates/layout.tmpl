@@ -28,16 +28,74 @@
     <nav class="bg-gradient-to-br from-brown-800 to-brown-900 text-white shadow-xl border-b-2 border-brown-600">
         <div class="container mx-auto px-4 py-4">
             <div class="flex items-center justify-between">
-                <a href="/" class="hidden md:flex items-center gap-2 hover:opacity-80 transition">
+                <!-- Logo - always visible -->
+                <a href="/" class="flex items-center gap-2 hover:opacity-80 transition">
                     <h1 class="text-2xl font-bold">☕ Arabica</h1>
                     <span class="text-xs bg-amber-400 text-brown-900 px-2 py-1 rounded-md font-semibold shadow-sm">ALPHA</span>
                 </a>
-                <div class="space-x-4">
-                    <a href="/" class="hover:text-brown-100 transition-colors font-medium">Home</a>
+                
+                <!-- Navigation links -->
+                <div class="flex items-center gap-4">
+                    <!-- Home link - mobile only -->
+                    <a href="/" class="md:hidden hover:text-brown-100 transition-colors font-medium">Home</a>
+                    
                     {{if .IsAuthenticated}}
+                    <!-- Brews link -->
                     <a href="/brews" class="hover:text-brown-100 transition-colors font-medium">Brews</a>
+                    
+                    <!-- New Brew button - commented out for now
                     <a href="/brews/new" class="hover:text-brown-100 transition-colors font-medium">New Brew</a>
-                    <a href="/manage" class="hover:text-brown-100 transition-colors font-medium">Manage</a>
+                    -->
+                    
+                    <!-- User profile dropdown -->
+                    <div x-data="{ open: false }" class="relative">
+                        <button @click="open = !open" @click.outside="open = false" class="flex items-center gap-2 hover:opacity-80 transition focus:outline-none">
+                            {{if and .UserProfile .UserProfile.Avatar}}
+                            {{$safeAvatar := safeAvatarURL .UserProfile.Avatar}}
+                            {{if $safeAvatar}}
+                            <img src="{{$safeAvatar}}" alt="" class="w-8 h-8 rounded-full object-cover ring-2 ring-brown-600" />
+                            {{else}}
+                            <div class="w-8 h-8 rounded-full bg-brown-600 flex items-center justify-center ring-2 ring-brown-500">
+                                <span class="text-sm font-medium">{{if and .UserProfile .UserProfile.DisplayName}}{{slice .UserProfile.DisplayName 0 1}}{{else}}?{{end}}</span>
+                            </div>
+                            {{end}}
+                            {{else}}
+                            <div class="w-8 h-8 rounded-full bg-brown-600 flex items-center justify-center ring-2 ring-brown-500">
+                                <span class="text-sm font-medium">{{if and .UserProfile .UserProfile.DisplayName}}{{slice .UserProfile.DisplayName 0 1}}{{else}}?{{end}}</span>
+                            </div>
+                            {{end}}
+                            <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        
+                        <!-- Dropdown menu -->
+                        <div x-show="open" x-cloak x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-brown-200 py-1 z-50">
+                            {{if and .UserProfile .UserProfile.Handle}}
+                            <div class="px-4 py-2 border-b border-brown-100">
+                                <p class="text-sm font-medium text-brown-900 truncate">{{if .UserProfile.DisplayName}}{{.UserProfile.DisplayName}}{{else}}{{.UserProfile.Handle}}{{end}}</p>
+                                <p class="text-xs text-brown-500 truncate">@{{.UserProfile.Handle}}</p>
+                            </div>
+                            {{end}}
+                            <a href="/profile/{{if and .UserProfile .UserProfile.Handle}}{{.UserProfile.Handle}}{{else}}{{.UserDID}}{{end}}" class="block px-4 py-2 text-sm text-brown-700 hover:bg-brown-50 transition-colors">
+                                View Profile
+                            </a>
+                            <a href="/manage" class="block px-4 py-2 text-sm text-brown-700 hover:bg-brown-50 transition-colors">
+                                Manage Records
+                            </a>
+                            <a href="#" class="block px-4 py-2 text-sm text-brown-400 cursor-not-allowed">
+                                Settings (coming soon)
+                            </a>
+                            <div class="border-t border-brown-100 mt-1 pt-1">
+                                <form action="/logout" method="POST">
+                                    <input type="hidden" name="csrf_token" class="csrf-token-field">
+                                    <button type="submit" class="w-full text-left px-4 py-2 text-sm text-brown-700 hover:bg-brown-50 transition-colors">
+                                        Logout
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                     {{end}}
                 </div>
             </div>

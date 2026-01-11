@@ -81,6 +81,33 @@ func validateOptionalRKey(rkey, fieldName string) string {
 	return ""
 }
 
+// getUserProfile fetches the profile for an authenticated user.
+// Returns nil if unable to fetch profile (non-fatal error).
+func (h *Handler) getUserProfile(ctx context.Context, did string) *bff.UserProfile {
+	if did == "" {
+		return nil
+	}
+
+	publicClient := atproto.NewPublicClient()
+	profile, err := publicClient.GetProfile(ctx, did)
+	if err != nil {
+		log.Warn().Err(err).Str("did", did).Msg("Failed to fetch user profile for header")
+		return nil
+	}
+
+	userProfile := &bff.UserProfile{
+		Handle: profile.Handle,
+	}
+	if profile.DisplayName != nil {
+		userProfile.DisplayName = *profile.DisplayName
+	}
+	if profile.Avatar != nil {
+		userProfile.Avatar = *profile.Avatar
+	}
+
+	return userProfile
+}
+
 // getAtprotoStore creates a user-scoped atproto store from the request context.
 // Returns the store and true if authenticated, or nil and false if not authenticated.
 func (h *Handler) getAtprotoStore(r *http.Request) (database.Store, bool) {
@@ -113,8 +140,14 @@ func (h *Handler) HandleHome(w http.ResponseWriter, r *http.Request) {
 	didStr, err := atproto.GetAuthenticatedDID(r.Context())
 	isAuthenticated := err == nil && didStr != ""
 
+	// Fetch user profile for authenticated users
+	var userProfile *bff.UserProfile
+	if isAuthenticated {
+		userProfile = h.getUserProfile(r.Context(), didStr)
+	}
+
 	// Don't fetch feed items here - let them load async via HTMX
-	if err := bff.RenderHome(w, isAuthenticated, didStr, nil); err != nil {
+	if err := bff.RenderHome(w, isAuthenticated, didStr, userProfile, nil); err != nil {
 		http.Error(w, "Failed to render page", http.StatusInternalServerError)
 		log.Error().Err(err).Msg("Failed to render home page")
 	}
@@ -221,9 +254,10 @@ func (h *Handler) HandleBrewList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	didStr, _ := atproto.GetAuthenticatedDID(r.Context())
+	userProfile := h.getUserProfile(r.Context(), didStr)
 
 	// Don't fetch brews here - let them load async via HTMX
-	if err := bff.RenderBrewList(w, nil, authenticated, didStr); err != nil {
+	if err := bff.RenderBrewList(w, nil, authenticated, didStr, userProfile); err != nil {
 		http.Error(w, "Failed to render page", http.StatusInternalServerError)
 		log.Error().Err(err).Msg("Failed to render brew list page")
 	}
@@ -239,10 +273,11 @@ func (h *Handler) HandleBrewNew(w http.ResponseWriter, r *http.Request) {
 	}
 
 	didStr, _ := atproto.GetAuthenticatedDID(r.Context())
+	userProfile := h.getUserProfile(r.Context(), didStr)
 
 	// Don't fetch data from PDS - client will populate dropdowns from cache
 	// This makes the page load much faster
-	if err := bff.RenderBrewForm(w, nil, nil, nil, nil, nil, authenticated, didStr); err != nil {
+	if err := bff.RenderBrewForm(w, nil, nil, nil, nil, nil, authenticated, didStr, userProfile); err != nil {
 		http.Error(w, "Failed to render page", http.StatusInternalServerError)
 		log.Error().Err(err).Msg("Failed to render brew form")
 	}
@@ -263,6 +298,7 @@ func (h *Handler) HandleBrewEdit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	didStr, _ := atproto.GetAuthenticatedDID(r.Context())
+	userProfile := h.getUserProfile(r.Context(), didStr)
 
 	brew, err := store.GetBrewByRKey(r.Context(), rkey)
 	if err != nil {
@@ -273,7 +309,7 @@ func (h *Handler) HandleBrewEdit(w http.ResponseWriter, r *http.Request) {
 
 	// Don't fetch dropdown data from PDS - client will populate from cache
 	// This makes the page load much faster
-	if err := bff.RenderBrewForm(w, nil, nil, nil, nil, brew, authenticated, didStr); err != nil {
+	if err := bff.RenderBrewForm(w, nil, nil, nil, nil, brew, authenticated, didStr, userProfile); err != nil {
 		http.Error(w, "Failed to render page", http.StatusInternalServerError)
 		log.Error().Err(err).Msg("Failed to render brew edit form")
 	}
@@ -730,9 +766,10 @@ func (h *Handler) HandleManage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	didStr, _ := atproto.GetAuthenticatedDID(r.Context())
+	userProfile := h.getUserProfile(r.Context(), didStr)
 
 	// Don't fetch data here - let it load async via HTMX
-	if err := bff.RenderManage(w, nil, nil, nil, nil, authenticated, didStr); err != nil {
+	if err := bff.RenderManage(w, nil, nil, nil, nil, authenticated, didStr, userProfile); err != nil {
 		http.Error(w, "Failed to render page", http.StatusInternalServerError)
 		log.Error().Err(err).Msg("Failed to render manage page")
 	}
@@ -1084,10 +1121,16 @@ func (h *Handler) HandleAbout(w http.ResponseWriter, r *http.Request) {
 	didStr, err := atproto.GetAuthenticatedDID(r.Context())
 	isAuthenticated := err == nil && didStr != ""
 
+	var userProfile *bff.UserProfile
+	if isAuthenticated {
+		userProfile = h.getUserProfile(r.Context(), didStr)
+	}
+
 	data := &bff.PageData{
 		Title:           "About",
 		IsAuthenticated: isAuthenticated,
 		UserDID:         didStr,
+		UserProfile:     userProfile,
 	}
 
 	if err := bff.RenderTemplate(w, "about.tmpl", data); err != nil {
@@ -1102,10 +1145,16 @@ func (h *Handler) HandleTerms(w http.ResponseWriter, r *http.Request) {
 	didStr, err := atproto.GetAuthenticatedDID(r.Context())
 	isAuthenticated := err == nil && didStr != ""
 
+	var userProfile *bff.UserProfile
+	if isAuthenticated {
+		userProfile = h.getUserProfile(r.Context(), didStr)
+	}
+
 	data := &bff.PageData{
 		Title:           "Terms of Service",
 		IsAuthenticated: isAuthenticated,
 		UserDID:         didStr,
+		UserProfile:     userProfile,
 	}
 
 	if err := bff.RenderTemplate(w, "terms.tmpl", data); err != nil {
@@ -1360,8 +1409,13 @@ func (h *Handler) HandleProfile(w http.ResponseWriter, r *http.Request) {
 	didStr, err := atproto.GetAuthenticatedDID(ctx)
 	isAuthenticated := err == nil && didStr != ""
 
+	var userProfile *bff.UserProfile
+	if isAuthenticated {
+		userProfile = h.getUserProfile(ctx, didStr)
+	}
+
 	// Render profile page
-	if err := bff.RenderProfile(w, profile, brews, beans, roasters, grinders, brewers, isAuthenticated, didStr); err != nil {
+	if err := bff.RenderProfile(w, profile, brews, beans, roasters, grinders, brewers, isAuthenticated, didStr, userProfile); err != nil {
 		http.Error(w, "Failed to render page", http.StatusInternalServerError)
 		log.Error().Err(err).Msg("Failed to render profile page")
 	}
@@ -1373,7 +1427,12 @@ func (h *Handler) HandleNotFound(w http.ResponseWriter, r *http.Request) {
 	didStr, err := atproto.GetAuthenticatedDID(r.Context())
 	isAuthenticated := err == nil && didStr != ""
 
-	if err := bff.Render404(w, isAuthenticated, didStr); err != nil {
+	var userProfile *bff.UserProfile
+	if isAuthenticated {
+		userProfile = h.getUserProfile(r.Context(), didStr)
+	}
+
+	if err := bff.Render404(w, isAuthenticated, didStr, userProfile); err != nil {
 		http.Error(w, "Page not found", http.StatusNotFound)
 		log.Error().Err(err).Msg("Failed to render 404 page")
 	}

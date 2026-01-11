@@ -101,6 +101,13 @@ func parsePartialTemplate() (*template.Template, error) {
 	return t, nil
 }
 
+// UserProfile contains user profile data for header display
+type UserProfile struct {
+	Handle      string
+	DisplayName string
+	Avatar      string
+}
+
 // PageData contains data for rendering pages
 type PageData struct {
 	Title           string
@@ -113,6 +120,7 @@ type PageData struct {
 	FeedItems       []*feed.FeedItem
 	IsAuthenticated bool
 	UserDID         string
+	UserProfile     *UserProfile
 }
 
 // BrewData wraps a brew with pre-serialized JSON for pours
@@ -138,8 +146,14 @@ func RenderTemplate(w http.ResponseWriter, tmpl string, data *PageData) error {
 	return t.ExecuteTemplate(w, "layout", data)
 }
 
+// RenderTemplateWithProfile renders a template with layout and user profile
+func RenderTemplateWithProfile(w http.ResponseWriter, tmpl string, data *PageData, userProfile *UserProfile) error {
+	data.UserProfile = userProfile
+	return RenderTemplate(w, tmpl, data)
+}
+
 // RenderHome renders the home page
-func RenderHome(w http.ResponseWriter, isAuthenticated bool, userDID string, feedItems []*feed.FeedItem) error {
+func RenderHome(w http.ResponseWriter, isAuthenticated bool, userDID string, userProfile *UserProfile, feedItems []*feed.FeedItem) error {
 	t, err := parsePageTemplate("home.tmpl")
 	if err != nil {
 		return err
@@ -148,13 +162,14 @@ func RenderHome(w http.ResponseWriter, isAuthenticated bool, userDID string, fee
 		Title:           "Home",
 		IsAuthenticated: isAuthenticated,
 		UserDID:         userDID,
+		UserProfile:     userProfile,
 		FeedItems:       feedItems,
 	}
 	return t.ExecuteTemplate(w, "layout", data)
 }
 
 // RenderBrewList renders the brew list page
-func RenderBrewList(w http.ResponseWriter, brews []*models.Brew, isAuthenticated bool, userDID string) error {
+func RenderBrewList(w http.ResponseWriter, brews []*models.Brew, isAuthenticated bool, userDID string, userProfile *UserProfile) error {
 	t, err := parsePageTemplate("brew_list.tmpl")
 	if err != nil {
 		return err
@@ -174,12 +189,13 @@ func RenderBrewList(w http.ResponseWriter, brews []*models.Brew, isAuthenticated
 		Brews:           brewList,
 		IsAuthenticated: isAuthenticated,
 		UserDID:         userDID,
+		UserProfile:     userProfile,
 	}
 	return t.ExecuteTemplate(w, "layout", data)
 }
 
 // RenderBrewForm renders the brew form page
-func RenderBrewForm(w http.ResponseWriter, beans []*models.Bean, roasters []*models.Roaster, grinders []*models.Grinder, brewers []*models.Brewer, brew *models.Brew, isAuthenticated bool, userDID string) error {
+func RenderBrewForm(w http.ResponseWriter, beans []*models.Bean, roasters []*models.Roaster, grinders []*models.Grinder, brewers []*models.Brewer, brew *models.Brew, isAuthenticated bool, userDID string, userProfile *UserProfile) error {
 	t, err := parsePageTemplate("brew_form.tmpl")
 	if err != nil {
 		return err
@@ -204,12 +220,13 @@ func RenderBrewForm(w http.ResponseWriter, beans []*models.Bean, roasters []*mod
 		Brew:            brewData,
 		IsAuthenticated: isAuthenticated,
 		UserDID:         userDID,
+		UserProfile:     userProfile,
 	}
 	return t.ExecuteTemplate(w, "layout", data)
 }
 
 // RenderManage renders the manage page
-func RenderManage(w http.ResponseWriter, beans []*models.Bean, roasters []*models.Roaster, grinders []*models.Grinder, brewers []*models.Brewer, isAuthenticated bool, userDID string) error {
+func RenderManage(w http.ResponseWriter, beans []*models.Bean, roasters []*models.Roaster, grinders []*models.Grinder, brewers []*models.Brewer, isAuthenticated bool, userDID string, userProfile *UserProfile) error {
 	t, err := parsePageTemplate("manage.tmpl")
 	if err != nil {
 		return err
@@ -222,6 +239,7 @@ func RenderManage(w http.ResponseWriter, beans []*models.Bean, roasters []*model
 		Brewers:         brewers,
 		IsAuthenticated: isAuthenticated,
 		UserDID:         userDID,
+		UserProfile:     userProfile,
 	}
 	return t.ExecuteTemplate(w, "layout", data)
 }
@@ -292,10 +310,11 @@ type ProfilePageData struct {
 	Brewers         []*models.Brewer
 	IsAuthenticated bool
 	UserDID         string
+	UserProfile     *UserProfile
 }
 
 // RenderProfile renders a user's public profile page
-func RenderProfile(w http.ResponseWriter, profile *atproto.Profile, brews []*models.Brew, beans []*models.Bean, roasters []*models.Roaster, grinders []*models.Grinder, brewers []*models.Brewer, isAuthenticated bool, userDID string) error {
+func RenderProfile(w http.ResponseWriter, profile *atproto.Profile, brews []*models.Brew, beans []*models.Bean, roasters []*models.Roaster, grinders []*models.Grinder, brewers []*models.Brewer, isAuthenticated bool, userDID string, userProfile *UserProfile) error {
 	t, err := parsePageTemplate("profile.tmpl")
 	if err != nil {
 		return err
@@ -316,12 +335,13 @@ func RenderProfile(w http.ResponseWriter, profile *atproto.Profile, brews []*mod
 		Brewers:         brewers,
 		IsAuthenticated: isAuthenticated,
 		UserDID:         userDID,
+		UserProfile:     userProfile,
 	}
 	return t.ExecuteTemplate(w, "layout", data)
 }
 
 // Render404 renders the 404 not found page
-func Render404(w http.ResponseWriter, isAuthenticated bool, userDID string) error {
+func Render404(w http.ResponseWriter, isAuthenticated bool, userDID string, userProfile *UserProfile) error {
 	t, err := parsePageTemplate("404.tmpl")
 	if err != nil {
 		return err
@@ -330,6 +350,7 @@ func Render404(w http.ResponseWriter, isAuthenticated bool, userDID string) erro
 		Title:           "Page Not Found",
 		IsAuthenticated: isAuthenticated,
 		UserDID:         userDID,
+		UserProfile:     userProfile,
 	}
 	w.WriteHeader(http.StatusNotFound)
 	return t.ExecuteTemplate(w, "layout", data)
