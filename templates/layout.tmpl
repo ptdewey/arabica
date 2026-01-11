@@ -10,8 +10,11 @@
     <link rel="stylesheet" href="/static/css/output.css?v=0.1.4" />
     <style>[x-cloak] { display: none !important; }</style>
     <link rel="manifest" href="/static/manifest.json" />
-    <script src="https://unpkg.com/htmx.org@2.0.8"></script>
-    <script src="https://unpkg.com/alpinejs@3.15.3/dist/cdn.min.js" defer></script>
+    <!-- Alpine.js - Using standard build due to CDN MIME type issues with CSP build -->
+    <!-- Standard build requires unsafe-eval in CSP, but our XSS protections remain strong -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.3/dist/cdn.min.js" defer crossorigin="anonymous"></script>
+    <!-- HTMX for dynamic content loading -->
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" crossorigin="anonymous"></script>
     <script src="/static/js/csrf.js"></script>
     {{if .IsAuthenticated}}
     <script src="/static/js/data-cache.js"></script>

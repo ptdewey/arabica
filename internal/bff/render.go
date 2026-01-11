@@ -35,6 +35,8 @@ func getTemplateFuncs() template.FuncMap {
 			"iterateRemaining": IterateRemaining,
 			"hasTemp":          HasTemp,
 			"hasValue":         HasValue,
+			"safeAvatarURL":    SafeAvatarURL,
+			"safeWebsiteURL":   SafeWebsiteURL,
 		}
 	})
 	return templateFuncs

@@ -5,6 +5,8 @@ package bff
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
+	"strings"
 
 	"arabica/internal/models"
 )
@@ -156,4 +158,78 @@ func HasTemp(temp float64) bool {
 // HasValue returns true if the int value is greater than zero
 func HasValue(val int) bool {
 	return val > 0
+}
+
+// SafeAvatarURL validates and sanitizes avatar URLs to prevent XSS and other attacks.
+// Only allows HTTPS URLs from trusted domains (Bluesky CDN) or relative paths.
+// Returns a safe URL or empty string if invalid.
+func SafeAvatarURL(avatarURL string) string {
+	if avatarURL == "" {
+		return ""
+	}
+
+	// Allow relative paths (e.g., /static/icon-placeholder.svg)
+	if strings.HasPrefix(avatarURL, "/") {
+		// Basic validation - must start with /static/
+		if strings.HasPrefix(avatarURL, "/static/") {
+			return avatarURL
+		}
+		return ""
+	}
+
+	// Parse the URL
+	parsedURL, err := url.Parse(avatarURL)
+	if err != nil {
+		return ""
+	}
+
+	// Only allow HTTPS scheme
+	if parsedURL.Scheme != "https" {
+		return ""
+	}
+
+	// Whitelist trusted domains for avatar images
+	// Bluesky uses cdn.bsky.app for avatars
+	trustedDomains := []string{
+		"cdn.bsky.app",
+		"av-cdn.bsky.app",
+	}
+
+	hostLower := strings.ToLower(parsedURL.Host)
+	for _, domain := range trustedDomains {
+		if hostLower == domain || strings.HasSuffix(hostLower, "."+domain) {
+			return avatarURL
+		}
+	}
+
+	// URL is not from a trusted domain
+	return ""
+}
+
+// SafeWebsiteURL validates and sanitizes website URLs for display.
+// Only allows HTTP/HTTPS URLs and performs basic validation.
+// Returns a safe URL or empty string if invalid.
+func SafeWebsiteURL(websiteURL string) string {
+	if websiteURL == "" {
+		return ""
+	}
+
+	// Parse the URL
+	parsedURL, err := url.Parse(websiteURL)
+	if err != nil {
+		return ""
+	}
+
+	// Only allow HTTP and HTTPS schemes
+	scheme := strings.ToLower(parsedURL.Scheme)
+	if scheme != "http" && scheme != "https" {
+		return ""
+	}
+
+	// Basic hostname validation - must have at least one dot
+	if !strings.Contains(parsedURL.Host, ".") {
+		return ""
+	}
+
+	return websiteURL
 }

@@ -85,15 +85,24 @@ function brewForm() {
             const selectedGrinder = grinderSelect?.value || '';
             const selectedBrewer = brewerSelect?.value || '';
             
-            // Populate beans
+            // Populate beans - using DOM methods to prevent XSS
             if (beanSelect && this.beans.length > 0) {
-                // Keep only the first option (placeholder)
-                beanSelect.innerHTML = '<option value="">Select a bean...</option>';
+                // Clear existing options
+                beanSelect.innerHTML = '';
+                
+                // Add placeholder
+                const placeholderOption = document.createElement('option');
+                placeholderOption.value = '';
+                placeholderOption.textContent = 'Select a bean...';
+                beanSelect.appendChild(placeholderOption);
+                
+                // Add bean options
                 this.beans.forEach(bean => {
                     const option = document.createElement('option');
                     option.value = bean.rkey || bean.RKey;
                     const roasterName = bean.Roaster?.Name || bean.roaster?.name || '';
                     const roasterSuffix = roasterName ? ` - ${roasterName}` : '';
+                    // Using textContent ensures all user input is safely escaped
                     option.textContent = `${bean.Name || bean.name} (${bean.Origin || bean.origin} - ${bean.RoastLevel || bean.roast_level})${roasterSuffix}`;
                     option.className = 'truncate';
                     if ((bean.rkey || bean.RKey) === selectedBean) {
@@ -103,12 +112,22 @@ function brewForm() {
                 });
             }
             
-            // Populate grinders
+            // Populate grinders - using DOM methods to prevent XSS
             if (grinderSelect && this.grinders.length > 0) {
-                grinderSelect.innerHTML = '<option value="">Select a grinder...</option>';
+                // Clear existing options
+                grinderSelect.innerHTML = '';
+                
+                // Add placeholder
+                const placeholderOption = document.createElement('option');
+                placeholderOption.value = '';
+                placeholderOption.textContent = 'Select a grinder...';
+                grinderSelect.appendChild(placeholderOption);
+                
+                // Add grinder options
                 this.grinders.forEach(grinder => {
                     const option = document.createElement('option');
                     option.value = grinder.rkey || grinder.RKey;
+                    // Using textContent ensures all user input is safely escaped
                     option.textContent = grinder.Name || grinder.name;
                     option.className = 'truncate';
                     if ((grinder.rkey || grinder.RKey) === selectedGrinder) {
@@ -118,12 +137,22 @@ function brewForm() {
                 });
             }
             
-            // Populate brewers
+            // Populate brewers - using DOM methods to prevent XSS
             if (brewerSelect && this.brewers.length > 0) {
-                brewerSelect.innerHTML = '<option value="">Select brew method...</option>';
+                // Clear existing options
+                brewerSelect.innerHTML = '';
+                
+                // Add placeholder
+                const placeholderOption = document.createElement('option');
+                placeholderOption.value = '';
+                placeholderOption.textContent = 'Select brew method...';
+                brewerSelect.appendChild(placeholderOption);
+                
+                // Add brewer options
                 this.brewers.forEach(brewer => {
                     const option = document.createElement('option');
                     option.value = brewer.rkey || brewer.RKey;
+                    // Using textContent ensures all user input is safely escaped
                     option.textContent = brewer.Name || brewer.name;
                     option.className = 'truncate';
                     if ((brewer.rkey || brewer.RKey) === selectedBrewer) {
@@ -133,13 +162,23 @@ function brewForm() {
                 });
             }
             
-            // Populate roasters in new bean modal
+            // Populate roasters in new bean modal - using DOM methods to prevent XSS
             const roasterSelect = this.$el.querySelector('select[name="roaster_rkey_modal"]');
             if (roasterSelect && this.roasters.length > 0) {
-                roasterSelect.innerHTML = '<option value="">No roaster</option>';
+                // Clear existing options
+                roasterSelect.innerHTML = '';
+                
+                // Add placeholder
+                const placeholderOption = document.createElement('option');
+                placeholderOption.value = '';
+                placeholderOption.textContent = 'No roaster';
+                roasterSelect.appendChild(placeholderOption);
+                
+                // Add roaster options
                 this.roasters.forEach(roaster => {
                     const option = document.createElement('option');
                     option.value = roaster.rkey || roaster.RKey;
+                    // Using textContent ensures all user input is safely escaped
                     option.textContent = roaster.Name || roaster.name;
                     roasterSelect.appendChild(option);
                 });

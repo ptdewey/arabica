@@ -7,7 +7,14 @@
         <div class="flex items-center gap-3 mb-3">
             <a href="/profile/{{.Author.Handle}}" class="flex-shrink-0">
                 {{if .Author.Avatar}}
-                <img src="{{.Author.Avatar}}" alt="" class="w-10 h-10 rounded-full object-cover hover:ring-2 hover:ring-brown-400 transition" />
+                {{$safeAvatar := safeAvatarURL .Author.Avatar}}
+                {{if $safeAvatar}}
+                <img src="{{$safeAvatar}}" alt="" class="w-10 h-10 rounded-full object-cover hover:ring-2 hover:ring-brown-400 transition" />
+                {{else}}
+                <div class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center hover:ring-2 hover:ring-brown-400 transition">
+                    <span class="text-gray-500 text-sm">?</span>
+                </div>
+                {{end}}
                 {{else}}
                 <div class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center hover:ring-2 hover:ring-brown-400 transition">
                     <span class="text-gray-500 text-sm">?</span>
@@ -133,7 +140,10 @@
                 <div><span class="text-gray-500">Location:</span> {{.Roaster.Location}}</div>
                 {{end}}
                 {{if .Roaster.Website}}
-                <div><span class="text-gray-500">Website:</span> <a href="{{.Roaster.Website}}" target="_blank" class="text-blue-600 hover:underline">{{.Roaster.Website}}</a></div>
+                {{$safeWebsite := safeWebsiteURL .Roaster.Website}}
+                {{if $safeWebsite}}
+                <div><span class="text-gray-500">Website:</span> <a href="{{$safeWebsite}}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">{{$safeWebsite}}</a></div>
+                {{end}}
                 {{end}}
             </div>
         </div>

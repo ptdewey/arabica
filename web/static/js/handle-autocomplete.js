@@ -56,38 +56,64 @@
                 return;
             }
             
-            // Display the actors
-            results.innerHTML = data.actors.map(actor => {
+            // Clear previous results
+            results.innerHTML = '';
+            
+            // Create actor elements using DOM methods to prevent XSS
+            data.actors.forEach(actor => {
                 const avatarUrl = actor.avatar || '/static/icon-placeholder.svg';
                 const displayName = actor.displayName || actor.handle;
                 
-                return `
-                    <div class="handle-result px-3 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-2"
-                         data-handle="${actor.handle}">
-                        <img src="${avatarUrl}" 
-                             alt="${displayName}"
-                             width="32"
-                             height="32"
-                             class="w-6 h-6 rounded-full object-cover flex-shrink-0"
-                             onerror="this.src='/static/icon-placeholder.svg'" />
-                        <div class="flex-1 min-w-0">
-                            <div class="font-medium text-sm text-gray-900 truncate">${displayName}</div>
-                            <div class="text-xs text-gray-500 truncate">@${actor.handle}</div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            
-            results.classList.remove('hidden');
-            
-            // Add click handlers
-            results.querySelectorAll('.handle-result').forEach(el => {
-                el.addEventListener('click', function() {
-                    input.value = this.dataset.handle;
+                // Create container div
+                const resultDiv = document.createElement('div');
+                resultDiv.className = 'handle-result px-3 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-2';
+                resultDiv.setAttribute('data-handle', actor.handle);
+                
+                // Create avatar image
+                const img = document.createElement('img');
+                // Validate URL scheme to prevent javascript: URLs
+                if (avatarUrl && (avatarUrl.startsWith('https://') || avatarUrl.startsWith('/static/'))) {
+                    img.src = avatarUrl;
+                } else {
+                    img.src = '/static/icon-placeholder.svg';
+                }
+                img.alt = ''; // Empty alt for decorative images
+                img.width = 32;
+                img.height = 32;
+                img.className = 'w-6 h-6 rounded-full object-cover flex-shrink-0';
+                img.onerror = function() { this.src = '/static/icon-placeholder.svg'; };
+                
+                // Create text container
+                const textContainer = document.createElement('div');
+                textContainer.className = 'flex-1 min-w-0';
+                
+                // Create display name element
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'font-medium text-sm text-gray-900 truncate';
+                nameDiv.textContent = displayName; // textContent auto-escapes
+                
+                // Create handle element
+                const handleDiv = document.createElement('div');
+                handleDiv.className = 'text-xs text-gray-500 truncate';
+                handleDiv.textContent = '@' + actor.handle; // textContent auto-escapes
+                
+                // Assemble the elements
+                textContainer.appendChild(nameDiv);
+                textContainer.appendChild(handleDiv);
+                resultDiv.appendChild(img);
+                resultDiv.appendChild(textContainer);
+                
+                // Add click handler
+                resultDiv.addEventListener('click', function() {
+                    input.value = actor.handle; // Use the actual handle from data, not DOM
                     results.classList.add('hidden');
                     results.innerHTML = '';
                 });
+                
+                results.appendChild(resultDiv);
             });
+            
+            results.classList.remove('hidden');
         } catch (error) {
             if (error.name !== 'AbortError') {
                 console.error('Error searching actors:', error);

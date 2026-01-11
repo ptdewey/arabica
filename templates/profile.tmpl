@@ -4,7 +4,14 @@
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
         <div class="flex items-center gap-4">
             {{if .Profile.Avatar}}
-            <img src="{{.Profile.Avatar}}" alt="" class="w-20 h-20 rounded-full object-cover" />
+            {{$safeAvatar := safeAvatarURL .Profile.Avatar}}
+            {{if $safeAvatar}}
+            <img src="{{$safeAvatar}}" alt="" class="w-20 h-20 rounded-full object-cover" />
+            {{else}}
+            <div class="w-20 h-20 rounded-full bg-gray-300 flex items-center justify-center">
+                <span class="text-gray-500 text-2xl">?</span>
+            </div>
+            {{end}}
             {{else}}
             <div class="w-20 h-20 rounded-full bg-gray-300 flex items-center justify-center">
                 <span class="text-gray-500 text-2xl">?</span>
@@ -232,7 +239,10 @@
                         <div class="text-sm text-gray-600 mt-1">
                             {{if .Location}}<span>{{.Location}}</span>{{end}}
                             {{if .Website}}
-                            <a href="{{.Website}}" target="_blank" class="text-blue-600 hover:underline ml-2">{{.Website}}</a>
+                            {{$safeWebsite := safeWebsiteURL .Website}}
+                            {{if $safeWebsite}}
+                            <a href="{{$safeWebsite}}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline ml-2">{{$safeWebsite}}</a>
+                            {{end}}
                             {{end}}
                         </div>
                     </div>
