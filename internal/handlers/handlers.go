@@ -1133,7 +1133,7 @@ func (h *Handler) HandleAbout(w http.ResponseWriter, r *http.Request) {
 		UserProfile:     userProfile,
 	}
 
-	if err := bff.RenderTemplate(w, "about.tmpl", data); err != nil {
+	if err := bff.RenderTemplate(w, r, "about.tmpl", data); err != nil {
 		http.Error(w, "Failed to render page", http.StatusInternalServerError)
 		log.Error().Err(err).Msg("Failed to render about page")
 	}
@@ -1157,7 +1157,7 @@ func (h *Handler) HandleTerms(w http.ResponseWriter, r *http.Request) {
 		UserProfile:     userProfile,
 	}
 
-	if err := bff.RenderTemplate(w, "terms.tmpl", data); err != nil {
+	if err := bff.RenderTemplate(w, r, "terms.tmpl", data); err != nil {
 		http.Error(w, "Failed to render page", http.StatusInternalServerError)
 		log.Error().Err(err).Msg("Failed to render terms page")
 	}

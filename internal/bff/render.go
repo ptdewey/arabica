@@ -138,7 +138,7 @@ type BrewListData struct {
 }
 
 // RenderTemplate renders a template with layout
-func RenderTemplate(w http.ResponseWriter, tmpl string, data *PageData) error {
+func RenderTemplate(w http.ResponseWriter, r *http.Request, tmpl string, data *PageData) error {
 	t, err := parsePageTemplate(tmpl)
 	if err != nil {
 		return err
@@ -147,9 +147,9 @@ func RenderTemplate(w http.ResponseWriter, tmpl string, data *PageData) error {
 }
 
 // RenderTemplateWithProfile renders a template with layout and user profile
-func RenderTemplateWithProfile(w http.ResponseWriter, tmpl string, data *PageData, userProfile *UserProfile) error {
+func RenderTemplateWithProfile(w http.ResponseWriter, r *http.Request, tmpl string, data *PageData, userProfile *UserProfile) error {
 	data.UserProfile = userProfile
-	return RenderTemplate(w, tmpl, data)
+	return RenderTemplate(w, r, tmpl, data)
 }
 
 // RenderHome renders the home page

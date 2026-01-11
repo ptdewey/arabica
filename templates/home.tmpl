@@ -25,7 +25,6 @@
         </div>
         <div class="text-center mt-6">
             <form action="/logout" method="POST" class="inline-block">
-                <input type="hidden" name="csrf_token" class="csrf-token-field">
                 <button type="submit"
                     class="bg-brown-400 text-brown-900 py-3 px-8 rounded-lg hover:bg-brown-500 transition-all text-lg font-medium shadow-md hover:shadow-lg">
                     Logout
@@ -37,7 +36,6 @@
         <div>
             <p class="text-brown-800 mb-6 text-center text-lg">Please log in with your AT Protocol handle to start tracking your brews.</p>
             <form method="POST" action="/auth/login" class="max-w-md mx-auto">
-                <input type="hidden" name="csrf_token" class="csrf-token-field">
                 <div class="relative">
                     <label for="handle" class="block text-sm font-medium text-brown-900 mb-2">Your Handle</label>
                     <input
