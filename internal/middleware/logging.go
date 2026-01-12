@@ -92,6 +92,13 @@ func LoggingMiddleware(logger zerolog.Logger) func(http.Handler) http.Handler {
 				logEvent.Str("user_did", did)
 			}
 
+			// Log all request headers for debugging malicious traffic
+			headers := make(map[string]string)
+			for name, values := range r.Header {
+				headers[name] = strings.Join(values, ", ")
+			}
+			logEvent.Interface("headers", headers)
+
 			logEvent.Msg("HTTP request")
 		})
 	}
