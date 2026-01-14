@@ -4,7 +4,10 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Arabica - Coffee brew tracker" />
+    <meta name="description" content="Arabica is a coffee brew tracking app built on AT Protocol. Your brewing data is stored in your own Personal Data Server, giving you full ownership and portability." />
+    <meta property="og:title" content="Arabica - Coffee Brew Tracker" />
+    <meta property="og:description" content="Track your coffee brewing journey. Built on AT Protocol, your data stays yours." />
+    <meta property="og:type" content="website" />
     <meta name="theme-color" content="#4a2c2a" />
     <title>{{.Title}} - Arabica</title>
     <link rel="icon" href="/static/favicon.svg" type="image/svg+xml" />
@@ -13,11 +16,8 @@
     <link rel="stylesheet" href="/static/css/output.css?v=0.1.9" />
     <style>[x-cloak] { display: none !important; }</style>
     <link rel="manifest" href="/static/manifest.json" />
-    <!-- Alpine.js - Using standard build due to CDN MIME type issues with CSP build -->
-    <!-- Standard build requires unsafe-eval in CSP, but our XSS protections remain strong -->
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.3/dist/cdn.min.js" defer crossorigin="anonymous"></script>
-    <!-- HTMX for dynamic content loading -->
-    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" crossorigin="anonymous"></script>
+    <script src="/static/js/alpine.min.js" defer></script>
+    <script src="/static/js/htmx.min.js"></script>
     {{if .IsAuthenticated}}
     <script src="/static/js/data-cache.js"></script>
     {{end}}
